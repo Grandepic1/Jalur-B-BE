@@ -1,0 +1,5216 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dineug/erd-editor/main/json-schema/schema.json",
+  "version": "3.0.0",
+  "settings": {
+    "width": 6000,
+    "height": 3000,
+    "scrollTop": 0,
+    "scrollLeft": 0,
+    "zoomLevel": 1,
+    "show": 431,
+    "database": 4,
+    "databaseName": "jalurB",
+    "canvasType": "ERD",
+    "language": 1,
+    "tableNameCase": 8,
+    "columnNameCase": 8,
+    "bracketType": 8,
+    "relationshipDataTypeSync": true,
+    "relationshipOptimization": false,
+    "columnOrder": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "maxWidthComment": -1,
+    "ignoreSaveSettings": 0
+  },
+  "doc": {
+    "tableIds": [
+      "t-users",
+      "t-industries",
+      "t-roles",
+      "t-skills",
+      "t-tools",
+      "t-user-skills",
+      "t-health-assessments",
+      "t-health-breakdowns",
+      "t-risk-scans",
+      "t-risk-factors",
+      "t-risk-scan-skills",
+      "t-ai-exposure-assessments",
+      "t-exposed-activities",
+      "t-skill-relevances",
+      "t-ai-exposure-skills",
+      "t-ai-exposure-tools",
+      "t-pivot-analyses",
+      "t-pivot-preferred-roles",
+      "t-pivot-skill-gaps",
+      "t-evidence-items",
+      "t-financial-profiles",
+      "t-runway-calculations",
+      "t-skill-missions",
+      "t-layoff-simulations",
+      "t-simulation-action-items"
+    ],
+    "relationshipIds": [
+      "r-industries-roles",
+      "r-users-user-skills",
+      "r-skills-user-skills",
+      "r-users-health",
+      "r-health-breakdowns",
+      "r-users-risk-scans",
+      "r-risk-scans-factors",
+      "r-risk-scans-rss",
+      "r-skills-rss",
+      "r-users-ai-exposure",
+      "r-ai-exposure-activities",
+      "r-ai-exposure-srl",
+      "r-skills-srl",
+      "r-users-aes",
+      "r-skills-aes",
+      "r-users-aet",
+      "r-tools-aet",
+      "r-users-pivot",
+      "r-roles-pivot",
+      "r-pivot-preferred-roles",
+      "r-pivot-gaps",
+      "r-skills-psg",
+      "r-users-evidence",
+      "r-users-financial-profiles",
+      "r-users-runway-calcs",
+      "r-users-sm",
+      "r-skills-sm",
+      "r-psg-sm",
+      "r-users-layoff",
+      "r-pivot-layoff",
+      "r-layoff-action-items"
+    ],
+    "indexIds": [
+      "i-user-skills-unique"
+    ],
+    "memoIds": []
+  },
+  "collections": {
+    "tableEntities": {
+      "t-users": {
+        "id": "t-users",
+        "name": "users",
+        "comment": "Akun pengguna platform (register/login)",
+        "columnIds": [
+          "c-u-id",
+          "c-u-username",
+          "c-u-email",
+          "c-u-password",
+          "c-u-fullname",
+          "c-u-created-at",
+          "c-u-updated-at"
+        ],
+        "seqColumnIds": [
+          "c-u-id",
+          "c-u-username",
+          "c-u-email",
+          "c-u-password",
+          "c-u-fullname",
+          "c-u-created-at",
+          "c-u-updated-at"
+        ],
+        "ui": {
+          "x": 100,
+          "y": 80,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 217,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640638968
+        }
+      },
+      "t-industries": {
+        "id": "t-industries",
+        "name": "industries",
+        "comment": "Master data industri",
+        "columnIds": [
+          "c-ind-id",
+          "c-ind-name"
+        ],
+        "seqColumnIds": [
+          "c-ind-id",
+          "c-ind-name"
+        ],
+        "ui": {
+          "x": 600,
+          "y": 40,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 108,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-roles": {
+        "id": "t-roles",
+        "name": "roles",
+        "comment": "Master role/jabatan + baseline risiko AI",
+        "columnIds": [
+          "c-r-id",
+          "c-r-industry-id",
+          "c-r-name",
+          "c-r-description",
+          "c-r-ai-risk-score"
+        ],
+        "seqColumnIds": [
+          "c-r-id",
+          "c-r-industry-id",
+          "c-r-name",
+          "c-r-description",
+          "c-r-ai-risk-score"
+        ],
+        "ui": {
+          "x": 1150,
+          "y": 40,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 210,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-skills": {
+        "id": "t-skills",
+        "name": "skills",
+        "comment": "Master data skill",
+        "columnIds": [
+          "c-s-id",
+          "c-s-name",
+          "c-s-category",
+          "c-s-market-trend"
+        ],
+        "seqColumnIds": [
+          "c-s-id",
+          "c-s-name",
+          "c-s-category",
+          "c-s-market-trend"
+        ],
+        "ui": {
+          "x": 600,
+          "y": 440,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 88,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-tools": {
+        "id": "t-tools",
+        "name": "tools",
+        "comment": "Master tools & metode kerja (payload tools_and_methods)",
+        "columnIds": [
+          "c-to-id",
+          "c-to-name"
+        ],
+        "seqColumnIds": [
+          "c-to-id",
+          "c-to-name"
+        ],
+        "ui": {
+          "x": 1150,
+          "y": 480,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 312,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-user-skills": {
+        "id": "t-user-skills",
+        "name": "user_skills",
+        "comment": "Junction user <-> skill (M:N)",
+        "columnIds": [
+          "c-us-id",
+          "c-us-user-id",
+          "c-us-skill-id",
+          "c-us-proficiency",
+          "c-us-years"
+        ],
+        "seqColumnIds": [
+          "c-us-id",
+          "c-us-user-id",
+          "c-us-skill-id",
+          "c-us-proficiency",
+          "c-us-years"
+        ],
+        "ui": {
+          "x": 100,
+          "y": 440,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 152,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-health-assessments": {
+        "id": "t-health-assessments",
+        "name": "health_assessments",
+        "comment": "Fitur 1: Career Health Score (snapshot payload)",
+        "columnIds": [
+          "c-ha-id",
+          "c-ha-user-id",
+          "c-ha-role",
+          "c-ha-industry",
+          "c-ha-duration",
+          "c-ha-responsibilities",
+          "c-ha-achievements",
+          "c-ha-feedback",
+          "c-ha-feedback-url",
+          "c-ha-progression",
+          "c-ha-overall-score",
+          "c-ha-level",
+          "c-ha-assessed-at"
+        ],
+        "seqColumnIds": [
+          "c-ha-id",
+          "c-ha-user-id",
+          "c-ha-role",
+          "c-ha-industry",
+          "c-ha-duration",
+          "c-ha-responsibilities",
+          "c-ha-achievements",
+          "c-ha-feedback",
+          "c-ha-feedback-url",
+          "c-ha-progression",
+          "c-ha-overall-score",
+          "c-ha-level",
+          "c-ha-assessed-at"
+        ],
+        "ui": {
+          "x": 100,
+          "y": 800,
+          "zIndex": 2,
+          "widthName": 105,
+          "widthComment": 250,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-health-breakdowns": {
+        "id": "t-health-breakdowns",
+        "name": "health_score_breakdowns",
+        "comment": "Skor per dimensi: performance/growth/skill_relevance/adaptability/mobility",
+        "columnIds": [
+          "c-hb-id",
+          "c-hb-assessment-id",
+          "c-hb-dimension",
+          "c-hb-score",
+          "c-hb-note"
+        ],
+        "seqColumnIds": [
+          "c-hb-id",
+          "c-hb-assessment-id",
+          "c-hb-dimension",
+          "c-hb-score",
+          "c-hb-note"
+        ],
+        "ui": {
+          "x": 600,
+          "y": 850,
+          "zIndex": 2,
+          "widthName": 137,
+          "widthComment": 401,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-risk-scans": {
+        "id": "t-risk-scans",
+        "name": "risk_scans",
+        "comment": "Fitur 2: Career Risk Scanner (snapshot payload)",
+        "columnIds": [
+          "c-rsc-id",
+          "c-rsc-user-id",
+          "c-rsc-role",
+          "c-rsc-industry",
+          "c-rsc-responsibilities",
+          "c-rsc-work-changes",
+          "c-rsc-job-desc",
+          "c-rsc-job-desc-url",
+          "c-rsc-overall-risk",
+          "c-rsc-summary",
+          "c-rsc-scanned-at"
+        ],
+        "seqColumnIds": [
+          "c-rsc-id",
+          "c-rsc-user-id",
+          "c-rsc-role",
+          "c-rsc-industry",
+          "c-rsc-responsibilities",
+          "c-rsc-work-changes",
+          "c-rsc-job-desc",
+          "c-rsc-job-desc-url",
+          "c-rsc-overall-risk",
+          "c-rsc-summary",
+          "c-rsc-scanned-at"
+        ],
+        "ui": {
+          "x": 1150,
+          "y": 800,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 250,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-risk-factors": {
+        "id": "t-risk-factors",
+        "name": "risk_factors",
+        "comment": "Faktor risiko hasil scan",
+        "columnIds": [
+          "c-rf-id",
+          "c-rf-scan-id",
+          "c-rf-source",
+          "c-rf-severity",
+          "c-rf-description"
+        ],
+        "seqColumnIds": [
+          "c-rf-id",
+          "c-rf-scan-id",
+          "c-rf-source",
+          "c-rf-severity",
+          "c-rf-description"
+        ],
+        "ui": {
+          "x": 1750,
+          "y": 850,
+          "zIndex": 2,
+          "widthName": 61,
+          "widthComment": 120,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-risk-scan-skills": {
+        "id": "t-risk-scan-skills",
+        "name": "risk_scan_skills",
+        "comment": "Junction scan <-> skills input",
+        "columnIds": [
+          "c-rsk-id",
+          "c-rsk-scan-id",
+          "c-rsk-skill-id"
+        ],
+        "seqColumnIds": [
+          "c-rsk-id",
+          "c-rsk-scan-id",
+          "c-rsk-skill-id"
+        ],
+        "ui": {
+          "x": 1750,
+          "y": 400,
+          "zIndex": 2,
+          "widthName": 78,
+          "widthComment": 157,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-ai-exposure-assessments": {
+        "id": "t-ai-exposure-assessments",
+        "name": "ai_exposure_assessments",
+        "comment": "Fitur 3: AI Exposure + Skill Relevance (snapshot payload)",
+        "columnIds": [
+          "c-aea-id",
+          "c-aea-user-id",
+          "c-aea-role",
+          "c-aea-responsibilities",
+          "c-aea-work-exp",
+          "c-aea-job-desc",
+          "c-aea-job-desc-url",
+          "c-aea-overall-level",
+          "c-aea-summary",
+          "c-aea-assessed-at"
+        ],
+        "seqColumnIds": [
+          "c-aea-id",
+          "c-aea-user-id",
+          "c-aea-role",
+          "c-aea-responsibilities",
+          "c-aea-work-exp",
+          "c-aea-job-desc",
+          "c-aea-job-desc-url",
+          "c-aea-overall-level",
+          "c-aea-summary",
+          "c-aea-assessed-at"
+        ],
+        "ui": {
+          "x": 2300,
+          "y": 800,
+          "zIndex": 2,
+          "widthName": 134,
+          "widthComment": 299,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-exposed-activities": {
+        "id": "t-exposed-activities",
+        "name": "exposed_activities",
+        "comment": "Aktivitas kerja yang mudah dibantu AI",
+        "columnIds": [
+          "c-ea-id",
+          "c-ea-assessment-id",
+          "c-ea-activity",
+          "c-ea-level",
+          "c-ea-note"
+        ],
+        "seqColumnIds": [
+          "c-ea-id",
+          "c-ea-assessment-id",
+          "c-ea-activity",
+          "c-ea-level",
+          "c-ea-note"
+        ],
+        "ui": {
+          "x": 2900,
+          "y": 850,
+          "zIndex": 2,
+          "widthName": 97,
+          "widthComment": 203,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-skill-relevances": {
+        "id": "t-skill-relevances",
+        "name": "skill_relevances",
+        "comment": "Relevansi tiap skill pasca-AI",
+        "columnIds": [
+          "c-srl-id",
+          "c-srl-assessment-id",
+          "c-srl-skill-id",
+          "c-srl-status",
+          "c-srl-recommendation"
+        ],
+        "seqColumnIds": [
+          "c-srl-id",
+          "c-srl-assessment-id",
+          "c-srl-skill-id",
+          "c-srl-status",
+          "c-srl-recommendation"
+        ],
+        "ui": {
+          "x": 2250,
+          "y": 400,
+          "zIndex": 2,
+          "widthName": 82,
+          "widthComment": 146,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-ai-exposure-skills": {
+        "id": "t-ai-exposure-skills",
+        "name": "ai_exposure_skills",
+        "comment": "Junction assessment <-> skills input",
+        "columnIds": [
+          "c-aes-id",
+          "c-aes-assessment-id",
+          "c-aes-skill-id"
+        ],
+        "seqColumnIds": [
+          "c-aes-id",
+          "c-aes-assessment-id",
+          "c-aes-skill-id"
+        ],
+        "ui": {
+          "x": 2900,
+          "y": 400,
+          "zIndex": 2,
+          "widthName": 94,
+          "widthComment": 193,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-ai-exposure-tools": {
+        "id": "t-ai-exposure-tools",
+        "name": "ai_exposure_tools",
+        "comment": "Junction assessment <-> tools_and_methods input",
+        "columnIds": [
+          "c-aet-id",
+          "c-aet-assessment-id",
+          "c-aet-tool-id"
+        ],
+        "seqColumnIds": [
+          "c-aet-id",
+          "c-aet-assessment-id",
+          "c-aet-tool-id"
+        ],
+        "ui": {
+          "x": 3450,
+          "y": 400,
+          "zIndex": 2,
+          "widthName": 95,
+          "widthComment": 271,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-pivot-analyses": {
+        "id": "t-pivot-analyses",
+        "name": "pivot_analyses",
+        "comment": "Fitur 4: Career Pivot Map (snapshot payload)",
+        "columnIds": [
+          "c-pa-id",
+          "c-pa-user-id",
+          "c-pa-current-role",
+          "c-pa-industry",
+          "c-pa-work-exp",
+          "c-pa-achievements",
+          "c-pa-work-preferences",
+          "c-pa-target-role-id",
+          "c-pa-match-score",
+          "c-pa-shared-skills",
+          "c-pa-missing-skills",
+          "c-pa-summary",
+          "c-pa-analyzed-at"
+        ],
+        "seqColumnIds": [
+          "c-pa-id",
+          "c-pa-user-id",
+          "c-pa-current-role",
+          "c-pa-industry",
+          "c-pa-work-exp",
+          "c-pa-achievements",
+          "c-pa-work-preferences",
+          "c-pa-target-role-id",
+          "c-pa-match-score",
+          "c-pa-shared-skills",
+          "c-pa-missing-skills",
+          "c-pa-summary",
+          "c-pa-analyzed-at"
+        ],
+        "ui": {
+          "x": 2300,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 78,
+          "widthComment": 237,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-pivot-preferred-roles": {
+        "id": "t-pivot-preferred-roles",
+        "name": "pivot_preferred_roles",
+        "comment": "preferred_roles input user per analisis",
+        "columnIds": [
+          "c-ppr-id",
+          "c-ppr-analysis-id",
+          "c-ppr-role-name"
+        ],
+        "seqColumnIds": [
+          "c-ppr-id",
+          "c-ppr-analysis-id",
+          "c-ppr-role-name"
+        ],
+        "ui": {
+          "x": 2950,
+          "y": 1290,
+          "zIndex": 2,
+          "widthName": 113,
+          "widthComment": 200,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-pivot-skill-gaps": {
+        "id": "t-pivot-skill-gaps",
+        "name": "pivot_skill_gaps",
+        "comment": "Skill gap menuju role target",
+        "columnIds": [
+          "c-psg-id",
+          "c-psg-analysis-id",
+          "c-psg-skill-id",
+          "c-psg-current-level",
+          "c-psg-required-level",
+          "c-psg-gap-level",
+          "c-psg-action"
+        ],
+        "seqColumnIds": [
+          "c-psg-id",
+          "c-psg-analysis-id",
+          "c-psg-skill-id",
+          "c-psg-current-level",
+          "c-psg-required-level",
+          "c-psg-gap-level",
+          "c-psg-action"
+        ],
+        "ui": {
+          "x": 3500,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 84,
+          "widthComment": 148,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-evidence-items": {
+        "id": "t-evidence-items",
+        "name": "evidence_items",
+        "comment": "Fitur 5: Career Evidence Vault",
+        "columnIds": [
+          "c-ev-id",
+          "c-ev-user-id",
+          "c-ev-type",
+          "c-ev-title",
+          "c-ev-role",
+          "c-ev-description",
+          "c-ev-impact",
+          "c-ev-date",
+          "c-ev-attachment-url",
+          "c-ev-created-at"
+        ],
+        "seqColumnIds": [
+          "c-ev-id",
+          "c-ev-user-id",
+          "c-ev-type",
+          "c-ev-title",
+          "c-ev-role",
+          "c-ev-description",
+          "c-ev-impact",
+          "c-ev-date",
+          "c-ev-attachment-url",
+          "c-ev-created-at"
+        ],
+        "ui": {
+          "x": 100,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 83,
+          "widthComment": 156,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-financial-profiles": {
+        "id": "t-financial-profiles",
+        "name": "financial_profiles",
+        "comment": "Fitur 6: Personal Runway - kondisi finansial terkini (1:1)",
+        "columnIds": [
+          "c-fp-id",
+          "c-fp-user-id",
+          "c-fp-savings",
+          "c-fp-expenses",
+          "c-fp-debt",
+          "c-fp-dependents",
+          "c-fp-liquid-funds",
+          "c-fp-currency",
+          "c-fp-updated-at"
+        ],
+        "seqColumnIds": [
+          "c-fp-id",
+          "c-fp-user-id",
+          "c-fp-savings",
+          "c-fp-expenses",
+          "c-fp-debt",
+          "c-fp-dependents",
+          "c-fp-liquid-funds",
+          "c-fp-currency",
+          "c-fp-updated-at"
+        ],
+        "ui": {
+          "x": 600,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 90,
+          "widthComment": 289,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-runway-calculations": {
+        "id": "t-runway-calculations",
+        "name": "runway_calculations",
+        "comment": "Riwayat hitung financial runway (snapshot)",
+        "columnIds": [
+          "c-rc-id",
+          "c-rc-user-id",
+          "c-rc-savings",
+          "c-rc-expenses",
+          "c-rc-debt",
+          "c-rc-dependents",
+          "c-rc-liquid-funds",
+          "c-rc-runway-months",
+          "c-rc-calculated-at"
+        ],
+        "seqColumnIds": [
+          "c-rc-id",
+          "c-rc-user-id",
+          "c-rc-savings",
+          "c-rc-expenses",
+          "c-rc-debt",
+          "c-rc-dependents",
+          "c-rc-liquid-funds",
+          "c-rc-runway-months",
+          "c-rc-calculated-at"
+        ],
+        "ui": {
+          "x": 1150,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 107,
+          "widthComment": 228,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-skill-missions": {
+        "id": "t-skill-missions",
+        "name": "skill_missions",
+        "comment": "Misi peningkatan skill (dari pivot gap / skill relevance)",
+        "columnIds": [
+          "c-sm-id",
+          "c-sm-user-id",
+          "c-sm-skill-id",
+          "c-sm-gap-id",
+          "c-sm-title",
+          "c-sm-description",
+          "c-sm-status",
+          "c-sm-due-date",
+          "c-sm-created-at"
+        ],
+        "seqColumnIds": [
+          "c-sm-id",
+          "c-sm-user-id",
+          "c-sm-skill-id",
+          "c-sm-gap-id",
+          "c-sm-title",
+          "c-sm-description",
+          "c-sm-status",
+          "c-sm-due-date",
+          "c-sm-created-at"
+        ],
+        "ui": {
+          "x": 4050,
+          "y": 1250,
+          "zIndex": 2,
+          "widthName": 72,
+          "widthComment": 285,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-layoff-simulations": {
+        "id": "t-layoff-simulations",
+        "name": "layoff_simulations",
+        "comment": "Fitur 7: What If I Get Fired? - konsumsi data fitur lain",
+        "columnIds": [
+          "c-ls-id",
+          "c-ls-user-id",
+          "c-ls-best-pivot-id",
+          "c-ls-career-readiness",
+          "c-ls-financial-readiness",
+          "c-ls-resilience-score",
+          "c-ls-runway",
+          "c-ls-financial-gap",
+          "c-ls-prep-time-months",
+          "c-ls-summary",
+          "c-ls-simulated-at"
+        ],
+        "seqColumnIds": [
+          "c-ls-id",
+          "c-ls-user-id",
+          "c-ls-best-pivot-id",
+          "c-ls-career-readiness",
+          "c-ls-financial-readiness",
+          "c-ls-resilience-score",
+          "c-ls-runway",
+          "c-ls-financial-gap",
+          "c-ls-prep-time-months",
+          "c-ls-summary",
+          "c-ls-simulated-at"
+        ],
+        "ui": {
+          "x": 2300,
+          "y": 1700,
+          "zIndex": 2,
+          "widthName": 96,
+          "widthComment": 278,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "t-simulation-action-items": {
+        "id": "t-simulation-action-items",
+        "name": "simulation_action_items",
+        "comment": "emergency_career_plan - rencana aksi bertahap",
+        "columnIds": [
+          "c-sai-id",
+          "c-sai-simulation-id",
+          "c-sai-step-order",
+          "c-sai-phase",
+          "c-sai-title",
+          "c-sai-description",
+          "c-sai-due-date",
+          "c-sai-is-completed"
+        ],
+        "seqColumnIds": [
+          "c-sai-id",
+          "c-sai-simulation-id",
+          "c-sai-step-order",
+          "c-sai-phase",
+          "c-sai-title",
+          "c-sai-description",
+          "c-sai-due-date",
+          "c-sai-is-completed"
+        ],
+        "ui": {
+          "x": 2950,
+          "y": 1740,
+          "zIndex": 2,
+          "widthName": 128,
+          "widthComment": 253,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      }
+    },
+    "tableColumnEntities": {
+      "c-u-id": {
+        "id": "c-u-id",
+        "tableId": "t-users",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-username": {
+        "id": "c-u-username",
+        "tableId": "t-users",
+        "name": "username",
+        "comment": "",
+        "dataType": "VARCHAR(50)",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 75,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-email": {
+        "id": "c-u-email",
+        "tableId": "t-users",
+        "name": "email",
+        "comment": "",
+        "dataType": "VARCHAR(255)",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-password": {
+        "id": "c-u-password",
+        "tableId": "t-users",
+        "name": "password_hash",
+        "comment": "",
+        "dataType": "VARCHAR(255)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 82,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-fullname": {
+        "id": "c-u-fullname",
+        "tableId": "t-users",
+        "name": "full_name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-created-at": {
+        "id": "c-u-created-at",
+        "tableId": "t-users",
+        "name": "created_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 65,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-u-updated-at": {
+        "id": "c-u-updated-at",
+        "tableId": "t-users",
+        "name": "updated_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 62,
+          "widthComment": 60,
+          "widthDataType": 65,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ind-id": {
+        "id": "c-ind-id",
+        "tableId": "t-industries",
+        "name": "id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ind-name": {
+        "id": "c-ind-name",
+        "tableId": "t-industries",
+        "name": "name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-r-id": {
+        "id": "c-r-id",
+        "tableId": "t-roles",
+        "name": "id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-r-industry-id": {
+        "id": "c-r-industry-id",
+        "tableId": "t-roles",
+        "name": "industry_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-r-name": {
+        "id": "c-r-name",
+        "tableId": "t-roles",
+        "name": "name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-r-description": {
+        "id": "c-r-description",
+        "tableId": "t-roles",
+        "name": "description",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-r-ai-risk-score": {
+        "id": "c-r-ai-risk-score",
+        "tableId": "t-roles",
+        "name": "ai_automation_risk_score",
+        "comment": "Baseline risiko otomasi AI role ini (0-100)",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 133,
+          "widthComment": 217,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-s-id": {
+        "id": "c-s-id",
+        "tableId": "t-skills",
+        "name": "id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-s-name": {
+        "id": "c-s-name",
+        "tableId": "t-skills",
+        "name": "name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-s-category": {
+        "id": "c-s-category",
+        "tableId": "t-skills",
+        "name": "category",
+        "comment": "technical | soft | domain",
+        "dataType": "VARCHAR(50)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 128,
+          "widthDataType": 75,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-s-market-trend": {
+        "id": "c-s-market-trend",
+        "tableId": "t-skills",
+        "name": "market_trend",
+        "comment": "declining | stable | rising",
+        "dataType": "VARCHAR(20)",
+        "default": "'stable'",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 72,
+          "widthComment": 130,
+          "widthDataType": 75,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-to-id": {
+        "id": "c-to-id",
+        "tableId": "t-tools",
+        "name": "id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-to-name": {
+        "id": "c-to-name",
+        "tableId": "t-tools",
+        "name": "name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-us-id": {
+        "id": "c-us-id",
+        "tableId": "t-user-skills",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-us-user-id": {
+        "id": "c-us-user-id",
+        "tableId": "t-user-skills",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-us-skill-id": {
+        "id": "c-us-skill-id",
+        "tableId": "t-user-skills",
+        "name": "skill_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-us-proficiency": {
+        "id": "c-us-proficiency",
+        "tableId": "t-user-skills",
+        "name": "proficiency_level",
+        "comment": "1-5",
+        "dataType": "TINYINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 89,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-us-years": {
+        "id": "c-us-years",
+        "tableId": "t-user-skills",
+        "name": "years_experience",
+        "comment": "",
+        "dataType": "DECIMAL(3,1)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 92,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-id": {
+        "id": "c-ha-id",
+        "tableId": "t-health-assessments",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-user-id": {
+        "id": "c-ha-user-id",
+        "tableId": "t-health-assessments",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-role": {
+        "id": "c-ha-role",
+        "tableId": "t-health-assessments",
+        "name": "role_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-industry": {
+        "id": "c-ha-industry",
+        "tableId": "t-health-assessments",
+        "name": "industry_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-duration": {
+        "id": "c-ha-duration",
+        "tableId": "t-health-assessments",
+        "name": "work_duration_months",
+        "comment": "wajib",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 123,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-responsibilities": {
+        "id": "c-ha-responsibilities",
+        "tableId": "t-health-assessments",
+        "name": "responsibilities",
+        "comment": "wajib",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-achievements": {
+        "id": "c-ha-achievements",
+        "tableId": "t-health-assessments",
+        "name": "achievements",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 74,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-feedback": {
+        "id": "c-ha-feedback",
+        "tableId": "t-health-assessments",
+        "name": "performance_feedback",
+        "comment": "opsional (text/file)",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 123,
+          "widthComment": 98,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-feedback-url": {
+        "id": "c-ha-feedback-url",
+        "tableId": "t-health-assessments",
+        "name": "performance_feedback_url",
+        "comment": "opsional jika feedback berupa file",
+        "dataType": "VARCHAR(500)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 141,
+          "widthComment": 179,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-progression": {
+        "id": "c-ha-progression",
+        "tableId": "t-health-assessments",
+        "name": "career_progression",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 102,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-overall-score": {
+        "id": "c-ha-overall-score",
+        "tableId": "t-health-assessments",
+        "name": "overall_score",
+        "comment": "hasil AI 0-100",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 70,
+          "widthComment": 74,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-level": {
+        "id": "c-ha-level",
+        "tableId": "t-health-assessments",
+        "name": "level",
+        "comment": "low | medium | high",
+        "dataType": "ENUM('low','medium','high')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 107,
+          "widthDataType": 151,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ha-assessed-at": {
+        "id": "c-ha-assessed-at",
+        "tableId": "t-health-assessments",
+        "name": "assessed_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 63,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-hb-id": {
+        "id": "c-hb-id",
+        "tableId": "t-health-breakdowns",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-hb-assessment-id": {
+        "id": "c-hb-assessment-id",
+        "tableId": "t-health-breakdowns",
+        "name": "assessment_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-hb-dimension": {
+        "id": "c-hb-dimension",
+        "tableId": "t-health-breakdowns",
+        "name": "dimension",
+        "comment": "performance | growth | skill_relevance | adaptability | mobility",
+        "dataType": "VARCHAR(50)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 325,
+          "widthDataType": 75,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-hb-score": {
+        "id": "c-hb-score",
+        "tableId": "t-health-breakdowns",
+        "name": "score",
+        "comment": "0-100",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-hb-note": {
+        "id": "c-hb-note",
+        "tableId": "t-health-breakdowns",
+        "name": "note",
+        "comment": "",
+        "dataType": "VARCHAR(255)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-id": {
+        "id": "c-rsc-id",
+        "tableId": "t-risk-scans",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-user-id": {
+        "id": "c-rsc-user-id",
+        "tableId": "t-risk-scans",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-role": {
+        "id": "c-rsc-role",
+        "tableId": "t-risk-scans",
+        "name": "role_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-industry": {
+        "id": "c-rsc-industry",
+        "tableId": "t-risk-scans",
+        "name": "industry_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-responsibilities": {
+        "id": "c-rsc-responsibilities",
+        "tableId": "t-risk-scans",
+        "name": "responsibilities",
+        "comment": "wajib",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-work-changes": {
+        "id": "c-rsc-work-changes",
+        "tableId": "t-risk-scans",
+        "name": "work_changes",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 76,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-job-desc": {
+        "id": "c-rsc-job-desc",
+        "tableId": "t-risk-scans",
+        "name": "job_description",
+        "comment": "opsional (text/file)",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 83,
+          "widthComment": 98,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-job-desc-url": {
+        "id": "c-rsc-job-desc-url",
+        "tableId": "t-risk-scans",
+        "name": "job_description_url",
+        "comment": "opsional jika berupa file",
+        "dataType": "VARCHAR(500)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 102,
+          "widthComment": 128,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-overall-risk": {
+        "id": "c-rsc-overall-risk",
+        "tableId": "t-risk-scans",
+        "name": "overall_risk_level",
+        "comment": "low | medium | high",
+        "dataType": "ENUM('low','medium','high')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 89,
+          "widthComment": 107,
+          "widthDataType": 151,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-summary": {
+        "id": "c-rsc-summary",
+        "tableId": "t-risk-scans",
+        "name": "summary",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsc-scanned-at": {
+        "id": "c-rsc-scanned-at",
+        "tableId": "t-risk-scans",
+        "name": "scanned_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rf-id": {
+        "id": "c-rf-id",
+        "tableId": "t-risk-factors",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rf-scan-id": {
+        "id": "c-rf-scan-id",
+        "tableId": "t-risk-factors",
+        "name": "scan_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rf-source": {
+        "id": "c-rf-source",
+        "tableId": "t-risk-factors",
+        "name": "source",
+        "comment": "industry_shift | market_demand | role_change | skill_dependency | ai_advancement",
+        "dataType": "VARCHAR(50)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 434,
+          "widthDataType": 75,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rf-severity": {
+        "id": "c-rf-severity",
+        "tableId": "t-risk-factors",
+        "name": "severity",
+        "comment": "low | medium | high",
+        "dataType": "ENUM('low','medium','high')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 107,
+          "widthDataType": 151,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rf-description": {
+        "id": "c-rf-description",
+        "tableId": "t-risk-factors",
+        "name": "description",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsk-id": {
+        "id": "c-rsk-id",
+        "tableId": "t-risk-scan-skills",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsk-scan-id": {
+        "id": "c-rsk-scan-id",
+        "tableId": "t-risk-scan-skills",
+        "name": "scan_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rsk-skill-id": {
+        "id": "c-rsk-skill-id",
+        "tableId": "t-risk-scan-skills",
+        "name": "skill_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-id": {
+        "id": "c-aea-id",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-user-id": {
+        "id": "c-aea-user-id",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-role": {
+        "id": "c-aea-role",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "role_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-responsibilities": {
+        "id": "c-aea-responsibilities",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "responsibilities",
+        "comment": "wajib",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-work-exp": {
+        "id": "c-aea-work-exp",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "work_experience",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 90,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-job-desc": {
+        "id": "c-aea-job-desc",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "job_description",
+        "comment": "opsional (text/file)",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 83,
+          "widthComment": 98,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-job-desc-url": {
+        "id": "c-aea-job-desc-url",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "job_description_url",
+        "comment": "opsional jika berupa file",
+        "dataType": "VARCHAR(500)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 102,
+          "widthComment": 128,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-overall-level": {
+        "id": "c-aea-overall-level",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "overall_exposure_level",
+        "comment": "low | medium | high",
+        "dataType": "ENUM('low','medium','high')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 119,
+          "widthComment": 107,
+          "widthDataType": 151,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-summary": {
+        "id": "c-aea-summary",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "summary",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aea-assessed-at": {
+        "id": "c-aea-assessed-at",
+        "tableId": "t-ai-exposure-assessments",
+        "name": "assessed_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 63,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ea-id": {
+        "id": "c-ea-id",
+        "tableId": "t-exposed-activities",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ea-assessment-id": {
+        "id": "c-ea-assessment-id",
+        "tableId": "t-exposed-activities",
+        "name": "assessment_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ea-activity": {
+        "id": "c-ea-activity",
+        "tableId": "t-exposed-activities",
+        "name": "activity_name",
+        "comment": "",
+        "dataType": "VARCHAR(150)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 74,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ea-level": {
+        "id": "c-ea-level",
+        "tableId": "t-exposed-activities",
+        "name": "exposure_level",
+        "comment": "low | medium | high",
+        "dataType": "ENUM('low','medium','high')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 107,
+          "widthDataType": 151,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ea-note": {
+        "id": "c-ea-note",
+        "tableId": "t-exposed-activities",
+        "name": "ai_impact_note",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-srl-id": {
+        "id": "c-srl-id",
+        "tableId": "t-skill-relevances",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-srl-assessment-id": {
+        "id": "c-srl-assessment-id",
+        "tableId": "t-skill-relevances",
+        "name": "assessment_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-srl-skill-id": {
+        "id": "c-srl-skill-id",
+        "tableId": "t-skill-relevances",
+        "name": "skill_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-srl-status": {
+        "id": "c-srl-status",
+        "tableId": "t-skill-relevances",
+        "name": "status",
+        "comment": "declining | stable | rising",
+        "dataType": "ENUM('declining','stable','rising')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 130,
+          "widthDataType": 174,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-srl-recommendation": {
+        "id": "c-srl-recommendation",
+        "tableId": "t-skill-relevances",
+        "name": "recommendation",
+        "comment": "",
+        "dataType": "VARCHAR(255)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 93,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aes-id": {
+        "id": "c-aes-id",
+        "tableId": "t-ai-exposure-skills",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aes-assessment-id": {
+        "id": "c-aes-assessment-id",
+        "tableId": "t-ai-exposure-skills",
+        "name": "assessment_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aes-skill-id": {
+        "id": "c-aes-skill-id",
+        "tableId": "t-ai-exposure-skills",
+        "name": "skill_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aet-id": {
+        "id": "c-aet-id",
+        "tableId": "t-ai-exposure-tools",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aet-assessment-id": {
+        "id": "c-aet-assessment-id",
+        "tableId": "t-ai-exposure-tools",
+        "name": "assessment_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-aet-tool-id": {
+        "id": "c-aet-tool-id",
+        "tableId": "t-ai-exposure-tools",
+        "name": "tool_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-id": {
+        "id": "c-pa-id",
+        "tableId": "t-pivot-analyses",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-user-id": {
+        "id": "c-pa-user-id",
+        "tableId": "t-pivot-analyses",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-current-role": {
+        "id": "c-pa-current-role",
+        "tableId": "t-pivot-analyses",
+        "name": "current_role_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 100,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-industry": {
+        "id": "c-pa-industry",
+        "tableId": "t-pivot-analyses",
+        "name": "industry_name",
+        "comment": "wajib",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-work-exp": {
+        "id": "c-pa-work-exp",
+        "tableId": "t-pivot-analyses",
+        "name": "work_experience",
+        "comment": "wajib",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 90,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-achievements": {
+        "id": "c-pa-achievements",
+        "tableId": "t-pivot-analyses",
+        "name": "achievements",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 74,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-work-preferences": {
+        "id": "c-pa-work-preferences",
+        "tableId": "t-pivot-analyses",
+        "name": "work_preferences",
+        "comment": "opsional",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 95,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-target-role-id": {
+        "id": "c-pa-target-role-id",
+        "tableId": "t-pivot-analyses",
+        "name": "target_role_id",
+        "comment": "role alternatif hasil analisis",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 74,
+          "widthComment": 141,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-match-score": {
+        "id": "c-pa-match-score",
+        "tableId": "t-pivot-analyses",
+        "name": "match_score",
+        "comment": "0-100 kecocokan",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 68,
+          "widthComment": 92,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-shared-skills": {
+        "id": "c-pa-shared-skills",
+        "tableId": "t-pivot-analyses",
+        "name": "shared_skills_count",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 103,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-missing-skills": {
+        "id": "c-pa-missing-skills",
+        "tableId": "t-pivot-analyses",
+        "name": "missing_skills_count",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 107,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-summary": {
+        "id": "c-pa-summary",
+        "tableId": "t-pivot-analyses",
+        "name": "summary",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-pa-analyzed-at": {
+        "id": "c-pa-analyzed-at",
+        "tableId": "t-pivot-analyses",
+        "name": "analyzed_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 64,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ppr-id": {
+        "id": "c-ppr-id",
+        "tableId": "t-pivot-preferred-roles",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ppr-analysis-id": {
+        "id": "c-ppr-analysis-id",
+        "tableId": "t-pivot-preferred-roles",
+        "name": "analysis_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ppr-role-name": {
+        "id": "c-ppr-role-name",
+        "tableId": "t-pivot-preferred-roles",
+        "name": "role_name",
+        "comment": "preferred_roles input",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 113,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-id": {
+        "id": "c-psg-id",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-analysis-id": {
+        "id": "c-psg-analysis-id",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "analysis_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-skill-id": {
+        "id": "c-psg-skill-id",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "skill_id",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-current-level": {
+        "id": "c-psg-current-level",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "current_level",
+        "comment": "1-5, NULL jika belum dimiliki",
+        "dataType": "TINYINT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 69,
+          "widthComment": 153,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-required-level": {
+        "id": "c-psg-required-level",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "required_level",
+        "comment": "1-5",
+        "dataType": "TINYINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 76,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-gap-level": {
+        "id": "c-psg-gap-level",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "gap_level",
+        "comment": "small | medium | large",
+        "dataType": "ENUM('small','medium','large')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 118,
+          "widthDataType": 163,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-psg-action": {
+        "id": "c-psg-action",
+        "tableId": "t-pivot-skill-gaps",
+        "name": "recommended_action",
+        "comment": "",
+        "dataType": "VARCHAR(255)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 117,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-id": {
+        "id": "c-ev-id",
+        "tableId": "t-evidence-items",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-user-id": {
+        "id": "c-ev-user-id",
+        "tableId": "t-evidence-items",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-type": {
+        "id": "c-ev-type",
+        "tableId": "t-evidence-items",
+        "name": "evidence_type",
+        "comment": "project | achievement | feedback | certificate | award | training | other",
+        "dataType": "ENUM('project','achievement','feedback','certificate','award','training','other')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 77,
+          "widthComment": 364,
+          "widthDataType": 403,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-title": {
+        "id": "c-ev-title",
+        "tableId": "t-evidence-items",
+        "name": "title",
+        "comment": "wajib",
+        "dataType": "VARCHAR(200)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-role": {
+        "id": "c-ev-role",
+        "tableId": "t-evidence-items",
+        "name": "user_role",
+        "comment": "wajib - peran user dalam aktivitas",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 179,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-description": {
+        "id": "c-ev-description",
+        "tableId": "t-evidence-items",
+        "name": "description",
+        "comment": "wajib - apa yang dilakukan user",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 169,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-impact": {
+        "id": "c-ev-impact",
+        "tableId": "t-evidence-items",
+        "name": "impact",
+        "comment": "wajib - hasil/dampak pekerjaan",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 167,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-date": {
+        "id": "c-ev-date",
+        "tableId": "t-evidence-items",
+        "name": "evidence_date",
+        "comment": "opsional",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-attachment-url": {
+        "id": "c-ev-attachment-url",
+        "tableId": "t-evidence-items",
+        "name": "attachment_url",
+        "comment": "opsional - dokumen/gambar/sertifikat",
+        "dataType": "VARCHAR(500)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 204,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ev-created-at": {
+        "id": "c-ev-created-at",
+        "tableId": "t-evidence-items",
+        "name": "created_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 65,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-id": {
+        "id": "c-fp-id",
+        "tableId": "t-financial-profiles",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-user-id": {
+        "id": "c-fp-user-id",
+        "tableId": "t-financial-profiles",
+        "name": "user_id",
+        "comment": "UNIQUE - satu profil per user",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 157,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-savings": {
+        "id": "c-fp-savings",
+        "tableId": "t-financial-profiles",
+        "name": "available_savings",
+        "comment": "wajib",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 92,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-expenses": {
+        "id": "c-fp-expenses",
+        "tableId": "t-financial-profiles",
+        "name": "monthly_essential_expenses",
+        "comment": "wajib",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 150,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-debt": {
+        "id": "c-fp-debt",
+        "tableId": "t-financial-profiles",
+        "name": "monthly_debt_payment",
+        "comment": "opsional",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 127,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-dependents": {
+        "id": "c-fp-dependents",
+        "tableId": "t-financial-profiles",
+        "name": "dependents",
+        "comment": "opsional",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 65,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-liquid-funds": {
+        "id": "c-fp-liquid-funds",
+        "tableId": "t-financial-profiles",
+        "name": "other_liquid_funds",
+        "comment": "opsional",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 99,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-currency": {
+        "id": "c-fp-currency",
+        "tableId": "t-financial-profiles",
+        "name": "currency",
+        "comment": "",
+        "dataType": "CHAR(3)",
+        "default": "'IDR'",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-fp-updated-at": {
+        "id": "c-fp-updated-at",
+        "tableId": "t-financial-profiles",
+        "name": "updated_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 62,
+          "widthComment": 60,
+          "widthDataType": 65,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-id": {
+        "id": "c-rc-id",
+        "tableId": "t-runway-calculations",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-user-id": {
+        "id": "c-rc-user-id",
+        "tableId": "t-runway-calculations",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-savings": {
+        "id": "c-rc-savings",
+        "tableId": "t-runway-calculations",
+        "name": "available_savings_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 145,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-expenses": {
+        "id": "c-rc-expenses",
+        "tableId": "t-runway-calculations",
+        "name": "essential_expenses_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 154,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-debt": {
+        "id": "c-rc-debt",
+        "tableId": "t-runway-calculations",
+        "name": "debt_payment_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 131,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-dependents": {
+        "id": "c-rc-dependents",
+        "tableId": "t-runway-calculations",
+        "name": "dependents_snapshot",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 118,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-liquid-funds": {
+        "id": "c-rc-liquid-funds",
+        "tableId": "t-runway-calculations",
+        "name": "liquid_funds_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 119,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-runway-months": {
+        "id": "c-rc-runway-months",
+        "tableId": "t-runway-calculations",
+        "name": "financial_runway_months",
+        "comment": "(savings + liquid funds) / (expenses + debt)",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 134,
+          "widthComment": 231,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-rc-calculated-at": {
+        "id": "c-rc-calculated-at",
+        "tableId": "t-runway-calculations",
+        "name": "calculated_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 70,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-id": {
+        "id": "c-sm-id",
+        "tableId": "t-skill-missions",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-user-id": {
+        "id": "c-sm-user-id",
+        "tableId": "t-skill-missions",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-skill-id": {
+        "id": "c-sm-skill-id",
+        "tableId": "t-skill-missions",
+        "name": "skill_id",
+        "comment": "skill yang dilatih",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 87,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-gap-id": {
+        "id": "c-sm-gap-id",
+        "tableId": "t-skill-missions",
+        "name": "pivot_skill_gap_id",
+        "comment": "misi bisa dibuat dari skill gap",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 94,
+          "widthComment": 155,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-title": {
+        "id": "c-sm-title",
+        "tableId": "t-skill-missions",
+        "name": "title",
+        "comment": "",
+        "dataType": "VARCHAR(200)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-description": {
+        "id": "c-sm-description",
+        "tableId": "t-skill-missions",
+        "name": "description",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-status": {
+        "id": "c-sm-status",
+        "tableId": "t-skill-missions",
+        "name": "status",
+        "comment": "todo | in_progress | completed",
+        "dataType": "ENUM('todo','in_progress','completed')",
+        "default": "'todo'",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 163,
+          "widthDataType": 207,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-due-date": {
+        "id": "c-sm-due-date",
+        "tableId": "t-skill-missions",
+        "name": "due_date",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sm-created-at": {
+        "id": "c-sm-created-at",
+        "tableId": "t-skill-missions",
+        "name": "created_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 65,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-id": {
+        "id": "c-ls-id",
+        "tableId": "t-layoff-simulations",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-user-id": {
+        "id": "c-ls-user-id",
+        "tableId": "t-layoff-simulations",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-best-pivot-id": {
+        "id": "c-ls-best-pivot-id",
+        "tableId": "t-layoff-simulations",
+        "name": "best_pivot_analysis_id",
+        "comment": "best_alternative_roles",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 117,
+          "widthComment": 115,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-career-readiness": {
+        "id": "c-ls-career-readiness",
+        "tableId": "t-layoff-simulations",
+        "name": "career_readiness_score",
+        "comment": "0-100",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 122,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-financial-readiness": {
+        "id": "c-ls-financial-readiness",
+        "tableId": "t-layoff-simulations",
+        "name": "financial_readiness_score",
+        "comment": "0-100",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 134,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-resilience-score": {
+        "id": "c-ls-resilience-score",
+        "tableId": "t-layoff-simulations",
+        "name": "overall_resilience_score",
+        "comment": "0-100",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 124,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-runway": {
+        "id": "c-ls-runway",
+        "tableId": "t-layoff-simulations",
+        "name": "financial_runway_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 134,
+          "widthComment": 60,
+          "widthDataType": 74,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-financial-gap": {
+        "id": "c-ls-financial-gap",
+        "tableId": "t-layoff-simulations",
+        "name": "financial_gap",
+        "comment": "selisih dana vs kebutuhan minimal",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 71,
+          "widthComment": 183,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-prep-time-months": {
+        "id": "c-ls-prep-time-months",
+        "tableId": "t-layoff-simulations",
+        "name": "estimated_preparation_time_months",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 195,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-summary": {
+        "id": "c-ls-summary",
+        "tableId": "t-layoff-simulations",
+        "name": "summary",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-ls-simulated-at": {
+        "id": "c-ls-simulated-at",
+        "tableId": "t-layoff-simulations",
+        "name": "simulated_at",
+        "comment": "",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 69,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-id": {
+        "id": "c-sai-id",
+        "tableId": "t-simulation-action-items",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 11,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-simulation-id": {
+        "id": "c-sai-simulation-id",
+        "tableId": "t-simulation-action-items",
+        "name": "simulation_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 72,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-step-order": {
+        "id": "c-sai-step-order",
+        "tableId": "t-simulation-action-items",
+        "name": "step_order",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-phase": {
+        "id": "c-sai-phase",
+        "tableId": "t-simulation-action-items",
+        "name": "phase",
+        "comment": "immediate | short_term | long_term",
+        "dataType": "ENUM('immediate','short_term','long_term')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 188,
+          "widthDataType": 232,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-title": {
+        "id": "c-sai-title",
+        "tableId": "t-simulation-action-items",
+        "name": "title",
+        "comment": "",
+        "dataType": "VARCHAR(200)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-description": {
+        "id": "c-sai-description",
+        "tableId": "t-simulation-action-items",
+        "name": "description",
+        "comment": "",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-due-date": {
+        "id": "c-sai-due-date",
+        "tableId": "t-simulation-action-items",
+        "name": "due_date",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "c-sai-is-completed": {
+        "id": "c-sai-is-completed",
+        "tableId": "t-simulation-action-items",
+        "name": "is_completed",
+        "comment": "",
+        "dataType": "BOOLEAN",
+        "default": "FALSE",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 72,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      }
+    },
+    "relationshipEntities": {
+      "r-industries-roles": {
+        "id": "r-industries-roles",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-industries",
+          "columnIds": [
+            "c-ind-id"
+          ],
+          "x": 986,
+          "y": 92,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-roles",
+          "columnIds": [
+            "c-r-industry-id"
+          ],
+          "x": 1150,
+          "y": 128,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-user-skills": {
+        "id": "r-users-user-skills",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 158.75,
+          "y": 304,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "t-user-skills",
+          "columnIds": [
+            "c-us-user-id"
+          ],
+          "x": 305.5,
+          "y": 440,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-user-skills": {
+        "id": "r-skills-user-skills",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 600,
+          "y": 516,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "t-user-skills",
+          "columnIds": [
+            "c-us-skill-id"
+          ],
+          "x": 511,
+          "y": 528,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-health": {
+        "id": "r-users-health",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 276.25,
+          "y": 304,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "t-health-assessments",
+          "columnIds": [
+            "c-ha-user-id"
+          ],
+          "x": 459,
+          "y": 800,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-health-breakdowns": {
+        "id": "r-health-breakdowns",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-health-assessments",
+          "columnIds": [
+            "c-ha-id"
+          ],
+          "x": 818,
+          "y": 984,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-health-breakdowns",
+          "columnIds": [
+            "c-hb-assessment-id"
+          ],
+          "x": 934,
+          "y": 1026,
+          "direction": 8
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-risk-scans": {
+        "id": "r-users-risk-scans",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 136,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-risk-scans",
+          "columnIds": [
+            "c-rsc-user-id"
+          ],
+          "x": 1150,
+          "y": 960,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-risk-scans-factors": {
+        "id": "r-risk-scans-factors",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-risk-scans",
+          "columnIds": [
+            "c-rsc-id"
+          ],
+          "x": 1778,
+          "y": 960,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-risk-factors",
+          "columnIds": [
+            "c-rf-scan-id"
+          ],
+          "x": 1750,
+          "y": 938,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-risk-scans-rss": {
+        "id": "r-risk-scans-rss",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-risk-scans",
+          "columnIds": [
+            "c-rsc-id"
+          ],
+          "x": 1464,
+          "y": 800,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "t-risk-scan-skills",
+          "columnIds": [
+            "c-rsk-scan-id"
+          ],
+          "x": 1750,
+          "y": 496,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-rss": {
+        "id": "r-skills-rss",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 1068,
+          "y": 455.2,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-risk-scan-skills",
+          "columnIds": [
+            "c-rsk-skill-id"
+          ],
+          "x": 1750,
+          "y": 432,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-ai-exposure": {
+        "id": "r-users-ai-exposure",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 98.66666666666666,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-ai-exposure-assessments",
+          "columnIds": [
+            "c-aea-user-id"
+          ],
+          "x": 2300,
+          "y": 948,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-ai-exposure-activities": {
+        "id": "r-ai-exposure-activities",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-ai-exposure-assessments",
+          "columnIds": [
+            "c-aea-id"
+          ],
+          "x": 2945,
+          "y": 1022,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-exposed-activities",
+          "columnIds": [
+            "c-ea-assessment-id"
+          ],
+          "x": 2900,
+          "y": 938,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-ai-exposure-srl": {
+        "id": "r-ai-exposure-srl",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-ai-exposure-assessments",
+          "columnIds": [
+            "c-aea-id"
+          ],
+          "x": 2461.25,
+          "y": 800,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "t-skill-relevances",
+          "columnIds": [
+            "c-srl-assessment-id"
+          ],
+          "x": 2541,
+          "y": 576,
+          "direction": 8
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-srl": {
+        "id": "r-skills-srl",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 1068,
+          "y": 516,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-skill-relevances",
+          "columnIds": [
+            "c-srl-skill-id"
+          ],
+          "x": 2250,
+          "y": 488,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-aes": {
+        "id": "r-users-aes",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-ai-exposure-assessments",
+          "columnIds": [
+            "c-aea-id"
+          ],
+          "x": 2783.75,
+          "y": 800,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "t-ai-exposure-skills",
+          "columnIds": [
+            "c-aes-assessment-id"
+          ],
+          "x": 2900,
+          "y": 496,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-aes": {
+        "id": "r-skills-aes",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 1068,
+          "y": 485.59999999999997,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-ai-exposure-skills",
+          "columnIds": [
+            "c-aes-skill-id"
+          ],
+          "x": 2900,
+          "y": 432,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-aet": {
+        "id": "r-users-aet",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-ai-exposure-assessments",
+          "columnIds": [
+            "c-aea-id"
+          ],
+          "x": 2945,
+          "y": 874,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-ai-exposure-tools",
+          "columnIds": [
+            "c-aet-assessment-id"
+          ],
+          "x": 3450,
+          "y": 496,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-tools-aet": {
+        "id": "r-tools-aet",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-tools",
+          "columnIds": [
+            "c-to-id"
+          ],
+          "x": 1556,
+          "y": 532,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-ai-exposure-tools",
+          "columnIds": [
+            "c-aet-tool-id"
+          ],
+          "x": 3450,
+          "y": 432,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-pivot": {
+        "id": "r-users-pivot",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 248.00000000000003,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-pivot-analyses",
+          "columnIds": [
+            "c-pa-user-id"
+          ],
+          "x": 2300,
+          "y": 1434,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-roles-pivot": {
+        "id": "r-roles-pivot",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "t-roles",
+          "columnIds": [
+            "c-r-id"
+          ],
+          "x": 1766,
+          "y": 128,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-pivot-analyses",
+          "columnIds": [
+            "c-pa-target-role-id"
+          ],
+          "x": 2588,
+          "y": 1250,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-pivot-preferred-roles": {
+        "id": "r-pivot-preferred-roles",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-pivot-analyses",
+          "columnIds": [
+            "c-pa-id"
+          ],
+          "x": 2876,
+          "y": 1342,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-pivot-preferred-roles",
+          "columnIds": [
+            "c-ppr-analysis-id"
+          ],
+          "x": 2950,
+          "y": 1354,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-pivot-gaps": {
+        "id": "r-pivot-gaps",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-pivot-analyses",
+          "columnIds": [
+            "c-pa-id"
+          ],
+          "x": 2876,
+          "y": 1526,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-pivot-skill-gaps",
+          "columnIds": [
+            "c-psg-analysis-id"
+          ],
+          "x": 3500,
+          "y": 1418,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-psg": {
+        "id": "r-skills-psg",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 1068,
+          "y": 546.4,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-pivot-skill-gaps",
+          "columnIds": [
+            "c-psg-skill-id"
+          ],
+          "x": 3500,
+          "y": 1306,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-evidence": {
+        "id": "r-users-evidence",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 393.75,
+          "y": 304,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "t-evidence-items",
+          "columnIds": [
+            "c-ev-user-id"
+          ],
+          "x": 647.5,
+          "y": 1250,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-financial-profiles": {
+        "id": "r-users-financial-profiles",
+        "identification": false,
+        "relationshipType": 16,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 511.25,
+          "y": 304,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "t-financial-profiles",
+          "columnIds": [
+            "c-fp-user-id"
+          ],
+          "x": 917.5,
+          "y": 1250,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-runway-calcs": {
+        "id": "r-users-runway-calcs",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 173.33333333333334,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-runway-calculations",
+          "columnIds": [
+            "c-rc-user-id"
+          ],
+          "x": 1150,
+          "y": 1386,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-sm": {
+        "id": "r-users-sm",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 210.66666666666669,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-skill-missions",
+          "columnIds": [
+            "c-sm-user-id"
+          ],
+          "x": 4050,
+          "y": 1295.3333333333335,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-skills-sm": {
+        "id": "r-skills-sm",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "t-skills",
+          "columnIds": [
+            "c-s-id"
+          ],
+          "x": 1068,
+          "y": 576.8,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-skill-missions",
+          "columnIds": [
+            "c-sm-skill-id"
+          ],
+          "x": 4050,
+          "y": 1386.0000000000002,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-psg-sm": {
+        "id": "r-psg-sm",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "t-pivot-skill-gaps",
+          "columnIds": [
+            "c-psg-id"
+          ],
+          "x": 4118,
+          "y": 1362,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-skill-missions",
+          "columnIds": [
+            "c-sm-gap-id"
+          ],
+          "x": 4050,
+          "y": 1476.666666666667,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-users-layoff": {
+        "id": "r-users-layoff",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-u-id"
+          ],
+          "x": 570,
+          "y": 285.33333333333337,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-layoff-simulations",
+          "columnIds": [
+            "c-ls-user-id"
+          ],
+          "x": 2300,
+          "y": 1860,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-pivot-layoff": {
+        "id": "r-pivot-layoff",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "t-pivot-analyses",
+          "columnIds": [
+            "c-pa-id"
+          ],
+          "x": 2588,
+          "y": 1618,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "t-layoff-simulations",
+          "columnIds": [
+            "c-ls-best-pivot-id"
+          ],
+          "x": 2653,
+          "y": 1700,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "r-layoff-action-items": {
+        "id": "r-layoff-action-items",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-layoff-simulations",
+          "columnIds": [
+            "c-ls-id"
+          ],
+          "x": 3006,
+          "y": 1860,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-simulation-action-items",
+          "columnIds": [
+            "c-sai-simulation-id"
+          ],
+          "x": 2950,
+          "y": 1864,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      }
+    },
+    "indexEntities": {
+      "i-user-skills-unique": {
+        "id": "i-user-skills-unique",
+        "name": "uq_user_skill",
+        "tableId": "t-user-skills",
+        "indexColumnIds": [
+          "ic-us-user",
+          "ic-us-skill"
+        ],
+        "seqIndexColumnIds": [
+          "ic-us-user",
+          "ic-us-skill"
+        ],
+        "unique": true,
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      }
+    },
+    "indexColumnEntities": {
+      "ic-us-user": {
+        "id": "ic-us-user",
+        "indexId": "i-user-skills-unique",
+        "columnId": "c-us-user-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      },
+      "ic-us-skill": {
+        "id": "ic-us-skill",
+        "indexId": "i-user-skills-unique",
+        "columnId": "c-us-skill-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1787640746818,
+          "createAt": 1787640746818
+        }
+      }
+    },
+    "memoEntities": {}
+  }
+}
