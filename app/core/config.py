@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     debug: bool = False
     frontend_url: str = "http://localhost:5173"
     backend_url: str = "http://localhost:8000"
+    cors_allow_all: bool = True
     cors_origins: str = "http://localhost:5173"
     cors_origin_regex: str | None = None
     jwt_secret_key: str = ""
