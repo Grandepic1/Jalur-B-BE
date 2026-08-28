@@ -1,5 +1,23 @@
 # ── User ─────────────────────────────────────────────────────────────
 from app.models.user import UserCreate, UserResponse
+from app.models.auth import (
+    AuthTokenPurpose,
+    AuthTokenResponse,
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    GoogleCodeExchange,
+    LoginRequest,
+    MessageResponse,
+    ResetPasswordRequest,
+    TokenActionRequest,
+)
+from app.models.profile import (
+    CareerGoal,
+    OnboardingCreate,
+    UserProfileCreate,
+    UserProfileResponse,
+    UserProfileUpdate,
+)
 
 # ── Master data ──────────────────────────────────────────────────────
 from app.models.master import (
@@ -61,14 +79,21 @@ from app.models.evidence import (
 
 # ── F6: Personal Runway ─────────────────────────────────────────────
 from app.models.financial import (
+    FinancialAssetCreate,
+    FinancialAssetResponse,
+    FinancialAssetType,
+    FinancialAssetUpdate,
     FinancialProfileCreate,
     FinancialProfileResponse,
+    LiquidityLevel,
     RunwayCalculationResponse,
 )
 
 # ── F7: What If I Get Fired ─────────────────────────────────────────
 from app.models.layoff import (
     ActionPhase,
+    LayoffScenario,
+    LayoffSimulationCreate,
     LayoffSimulationResponse,
     LayoffSimulationWithActionItems,
     SimulationActionItemResponse,
@@ -85,6 +110,20 @@ __all__ = [
     # User
     "UserCreate",
     "UserResponse",
+    "LoginRequest",
+    "GoogleCodeExchange",
+    "AuthTokenResponse",
+    "AuthTokenPurpose",
+    "TokenActionRequest",
+    "ForgotPasswordRequest",
+    "ResetPasswordRequest",
+    "ChangePasswordRequest",
+    "MessageResponse",
+    "CareerGoal",
+    "OnboardingCreate",
+    "UserProfileCreate",
+    "UserProfileUpdate",
+    "UserProfileResponse",
     # Master
     "IndustryRead",
     "RoleRead",
@@ -129,8 +168,15 @@ __all__ = [
     "FinancialProfileCreate",
     "FinancialProfileResponse",
     "RunwayCalculationResponse",
+    "FinancialAssetType",
+    "LiquidityLevel",
+    "FinancialAssetCreate",
+    "FinancialAssetUpdate",
+    "FinancialAssetResponse",
     # F7
     "ActionPhase",
+    "LayoffScenario",
+    "LayoffSimulationCreate",
     "LayoffSimulationResponse",
     "LayoffSimulationWithActionItems",
     "SimulationActionItemResponse",

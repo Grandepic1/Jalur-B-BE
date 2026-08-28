@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, DATE, TIMESTAMP, ForeignKey, String, Text
+from sqlalchemy import BigInteger, Boolean, DATE, TIMESTAMP, ForeignKey, String, Text, false
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -37,6 +37,7 @@ class EvidenceItem(Base):
     impact: Mapped[str] = mapped_column(Text)
     evidence_date: Mapped[date | None] = mapped_column(DATE)
     attachment_url: Mapped[str | None] = mapped_column(String(500))
+    ai_generated: Mapped[bool] = mapped_column(Boolean, server_default=false())
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         server_default="CURRENT_TIMESTAMP",
@@ -54,6 +55,7 @@ class EvidenceItemCreate(BaseModel):
     impact: str
     evidence_date: date | None = None
     attachment_url: str | None = Field(None, max_length=500)
+    ai_generated: bool = False
 
 
 class EvidenceItemResponse(BaseModel):
@@ -66,6 +68,7 @@ class EvidenceItemResponse(BaseModel):
     impact: str
     evidence_date: date | None
     attachment_url: str | None
+    ai_generated: bool
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

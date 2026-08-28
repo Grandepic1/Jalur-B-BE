@@ -1,6 +1,8 @@
 # ── Master data ──────────────────────────────────────────────────────
 from app.models.master import Industry, Role, Skill, Tool
 from app.models.user import User
+from app.models.auth import AuthActionToken, OAuthLoginCode
+from app.models.profile import UserProfile
 from app.models.user_skills import UserSkill
 
 # ── F1: Career Health Score ──────────────────────────────────────────
@@ -25,7 +27,7 @@ from app.models.pivot import PivotAnalysis, PivotPreferredRole, PivotSkillGap
 from app.models.evidence import EvidenceItem
 
 # ── F6: Personal Runway ─────────────────────────────────────────────
-from app.models.financial import FinancialProfile, RunwayCalculation
+from app.models.financial import FinancialAsset, FinancialProfile, RunwayCalculation
 
 # ── F7: What If I Get Fired ─────────────────────────────────────────
 from app.models.layoff import LayoffSimulation, SimulationActionItem
@@ -36,6 +38,9 @@ from app.models.missions import SkillMission
 __all__ = [
     # User
     "User",
+    "OAuthLoginCode",
+    "AuthActionToken",
+    "UserProfile",
     # Master data
     "Industry",
     "Role",
@@ -64,6 +69,7 @@ __all__ = [
     "EvidenceItem",
     # F6
     "FinancialProfile",
+    "FinancialAsset",
     "RunwayCalculation",
     # F7
     "LayoffSimulation",

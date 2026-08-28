@@ -19,6 +19,12 @@ class ActionPhase(str, PyEnum):
     long_term = "long_term"
 
 
+class LayoffScenario(str, PyEnum):
+    tomorrow = "tomorrow"
+    one_month = "one_month"
+    three_months = "three_months"
+
+
 # ─── SQLAlchemy Models ───────────────────────────────────────────────
 
 
@@ -27,15 +33,21 @@ class LayoffSimulation(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    scenario: Mapped[LayoffScenario] = mapped_column(
+        SAEnum(LayoffScenario), server_default=LayoffScenario.tomorrow.value
+    )
     best_pivot_analysis_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("pivot_analyses.id", ondelete="SET NULL")
     )
     career_readiness_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     financial_readiness_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    skill_relevance_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    job_mobility_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     overall_resilience_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     financial_runway_months: Mapped[Decimal | None] = mapped_column(DECIMAL(6, 2))
     financial_gap: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
     estimated_preparation_time_months: Mapped[int | None] = mapped_column(Integer)
+    evidence_count: Mapped[int] = mapped_column(Integer, server_default="0")
     summary: Mapped[str | None] = mapped_column(Text)
     simulated_at: Mapped[datetime] = mapped_column(
         DATETIME,
@@ -84,13 +96,17 @@ class SimulationActionItemResponse(BaseModel):
 class LayoffSimulationResponse(BaseModel):
     id: int
     user_id: int
+    scenario: LayoffScenario
     best_pivot_analysis_id: int | None
     career_readiness_score: Decimal | None
     financial_readiness_score: Decimal | None
+    skill_relevance_score: Decimal | None
+    job_mobility_score: Decimal | None
     overall_resilience_score: Decimal | None
     financial_runway_months: Decimal | None
     financial_gap: Decimal | None
     estimated_preparation_time_months: int | None
+    evidence_count: int
     summary: str | None
     simulated_at: datetime
 
@@ -99,3 +115,7 @@ class LayoffSimulationResponse(BaseModel):
 
 class LayoffSimulationWithActionItems(LayoffSimulationResponse):
     action_items: list[SimulationActionItemResponse]
+
+
+class LayoffSimulationCreate(BaseModel):
+    scenario: LayoffScenario = LayoffScenario.tomorrow

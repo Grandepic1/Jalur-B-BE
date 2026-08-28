@@ -5,9 +5,14 @@ description = "Jalur B — career & financial resilience platform backend"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiosmtplib>=5.1.2",
     "alembic>=1.19.1",
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.141.1",
+    "google-auth[requests]>=2.57.0",
+    "httpx>=0.28.1",
+    "pwdlib[argon2]>=0.3.1",
     "pydantic-settings>=2.15.0",
+    "pyjwt[crypto]>=2.13.0",
     "sqlalchemy[asyncio]>=2.0.52",
 ]

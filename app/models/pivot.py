@@ -30,6 +30,11 @@ class PivotAnalysis(Base):
     current_role_name: Mapped[str] = mapped_column(String(100))
     industry_name: Mapped[str] = mapped_column(String(100))
     work_experience: Mapped[str] = mapped_column(Text)
+    responsibilities: Mapped[str | None] = mapped_column(Text)
+    skills_text: Mapped[str | None] = mapped_column(Text)
+    tools_and_methods: Mapped[str | None] = mapped_column(Text)
+    job_description: Mapped[str | None] = mapped_column(Text)
+    job_description_url: Mapped[str | None] = mapped_column(String(500))
     achievements: Mapped[str | None] = mapped_column(Text)
     work_preferences: Mapped[str | None] = mapped_column(Text)
     target_role_id: Mapped[int | None] = mapped_column(
@@ -61,6 +66,9 @@ class PivotPreferredRole(Base):
         ForeignKey("pivot_analyses.id", ondelete="CASCADE")
     )
     role_name: Mapped[str] = mapped_column(String(100))
+    match_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    preparation_time_months: Mapped[int | None] = mapped_column(Integer)
+    preparation_description: Mapped[str | None] = mapped_column(Text)
 
     analysis: Mapped["PivotAnalysis"] = relationship(back_populates="preferred_roles")
 
@@ -89,6 +97,9 @@ class PivotPreferredRoleResponse(BaseModel):
     id: int
     analysis_id: int
     role_name: str
+    match_score: Decimal | None
+    preparation_time_months: int | None
+    preparation_description: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -109,9 +120,14 @@ class PivotAnalysisCreate(BaseModel):
     current_role_name: str = Field(..., max_length=100)
     industry_name: str = Field(..., max_length=100)
     work_experience: str
+    responsibilities: str | None = None
+    skills_text: str | None = None
+    tools_and_methods: str | None = None
+    job_description: str | None = None
+    job_description_url: str | None = Field(None, max_length=500)
     achievements: str | None = None
     work_preferences: str | None = None
-    preferred_role_names: list[str] = []
+    preferred_role_names: list[str] = Field(default_factory=list)
 
 
 class PivotAnalysisResponse(BaseModel):
@@ -120,6 +136,11 @@ class PivotAnalysisResponse(BaseModel):
     current_role_name: str
     industry_name: str
     work_experience: str
+    responsibilities: str | None
+    skills_text: str | None
+    tools_and_methods: str | None
+    job_description: str | None
+    job_description_url: str | None
     achievements: str | None
     work_preferences: str | None
     target_role_id: int | None

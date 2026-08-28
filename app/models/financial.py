@@ -1,11 +1,27 @@
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, CHAR, DATETIME, DECIMAL, ForeignKey, Integer, TIMESTAMP
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import BigInteger, CHAR, DATETIME, DECIMAL, ForeignKey, Integer, String, Text, TIMESTAMP, func
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+
+class FinancialAssetType(str, PyEnum):
+    main_savings = "main_savings"
+    emergency_fund = "emergency_fund"
+    long_term_savings = "long_term_savings"
+    investment = "investment"
+    other = "other"
+
+
+class LiquidityLevel(str, PyEnum):
+    liquid = "liquid"
+    requires_process = "requires_process"
+    illiquid = "illiquid"
 
 
 # ─── SQLAlchemy Models ───────────────────────────────────────────────
@@ -47,6 +63,29 @@ class RunwayCalculation(Base):
     )
 
 
+class FinancialAsset(Base):
+    __tablename__ = "financial_assets"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    amount: Mapped[Decimal] = mapped_column(DECIMAL(15, 2))
+    asset_type: Mapped[FinancialAssetType] = mapped_column(SAEnum(FinancialAssetType))
+    liquidity: Mapped[LiquidityLevel] = mapped_column(SAEnum(LiquidityLevel))
+    note: Mapped[str | None] = mapped_column(Text)
+    currency: Mapped[str] = mapped_column(CHAR(3), server_default="IDR")
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped["User"] = relationship()  # noqa: F821
+
+
 # ─── Pydantic Schemas ────────────────────────────────────────────────
 
 
@@ -83,5 +122,38 @@ class RunwayCalculationResponse(BaseModel):
     liquid_funds_snapshot: Decimal | None
     financial_runway_months: Decimal
     calculated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FinancialAssetCreate(BaseModel):
+    name: str = Field(..., max_length=100)
+    amount: Decimal = Field(..., ge=0)
+    asset_type: FinancialAssetType
+    liquidity: LiquidityLevel
+    note: str | None = None
+    currency: str = Field("IDR", min_length=3, max_length=3)
+
+
+class FinancialAssetUpdate(BaseModel):
+    name: str | None = Field(None, max_length=100)
+    amount: Decimal | None = Field(None, ge=0)
+    asset_type: FinancialAssetType | None = None
+    liquidity: LiquidityLevel | None = None
+    note: str | None = None
+    currency: str | None = Field(None, min_length=3, max_length=3)
+
+
+class FinancialAssetResponse(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    amount: Decimal
+    asset_type: FinancialAssetType
+    liquidity: LiquidityLevel
+    note: str | None
+    currency: str
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
