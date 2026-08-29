@@ -1,10 +1,14 @@
 from decimal import Decimal
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import DECIMAL, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+
+T = TypeVar("T")
 
 
 # ─── SQLAlchemy Models ───────────────────────────────────────────────
@@ -87,3 +91,10 @@ class ToolRead(BaseModel):
     name: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class Page(BaseModel, Generic[T]):
+    items: list[T]
+    total: int
+    limit: int
+    offset: int

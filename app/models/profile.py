@@ -1,12 +1,13 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, String, Text, func
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.models.user import UserResponse
 
 
 class CareerGoal(str, PyEnum):
@@ -110,16 +111,41 @@ class OnboardingCreate(BaseModel):
 
 
 class UserProfileUpdate(BaseModel):
-    full_name: str | None = Field(None, max_length=150)
-    current_role_name: str | None = Field(None, max_length=100)
-    industry_name: str | None = Field(None, max_length=100)
-    work_duration_months: int | None = Field(None, ge=0)
-    is_first_job: bool | None = None
-    daily_activities: str | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    full_name: str | None = Field(None, min_length=1, max_length=150)
+    current_role_name: str | None = Field(None, min_length=1, max_length=100)
+    industry_name: str | None = Field(None, min_length=1, max_length=100)
+    work_duration_months: int | None = Field(None, strict=True, ge=0, le=960)
+    is_first_job: bool | None = Field(None, strict=True)
+    daily_activities: str | None = Field(None, min_length=1, max_length=5000)
     career_goal: CareerGoal | None = None
     target_role_name: str | None = Field(None, max_length=100)
     target_industry_name: str | None = Field(None, max_length=100)
     avatar_url: str | None = Field(None, max_length=500)
+
+    @field_validator(
+        "full_name",
+        "current_role_name",
+        "industry_name",
+        "daily_activities",
+        "target_role_name",
+        "target_industry_name",
+        mode="before",
+    )
+    @classmethod
+    def normalize_text(cls, value: object) -> object:
+        if value is None or not isinstance(value, str):
+            return value
+        normalized = " ".join(value.split())
+        return normalized or None
+
+    @model_validator(mode="after")
+    def prevent_required_fields_from_being_cleared(self) -> "UserProfileUpdate":
+        for field in ("full_name", "current_role_name", "industry_name"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null or empty")
+        return self
 
 
 class UserProfileResponse(BaseModel):
@@ -160,4 +186,10 @@ class OnboardingResponse(BaseModel):
 class OnboardingOptionsResponse(BaseModel):
     career_goals: list[CareerGoal]
     industries: list[str]
+    skills: list[OnboardingSkillResponse]
+
+
+class ProfileResponse(BaseModel):
+    user: UserResponse
+    profile: UserProfileResponse
     skills: list[OnboardingSkillResponse]

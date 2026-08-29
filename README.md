@@ -129,3 +129,24 @@ All onboarding routes require a verified bearer-token user:
 
 Career-goal values are `grow_current`, `level_up`, `change_role`, `change_industry`, and
 `undecided`. Skill names are case-insensitively unique, and each user may submit 1–8.
+
+## Profile API
+
+Verified users who completed onboarding can use:
+
+- `GET /api/profile` to retrieve account identity, career profile, and selected skills.
+- `PATCH /api/profile` to update profile-owned fields.
+
+Email and username are intentionally not editable through the profile endpoint because
+account identity changes require separate verification flows.
+
+## Master Data API
+
+Verified users can query paginated catalogs with `limit`, `offset`, and optional `q`:
+
+- `GET /api/master/industries`
+- `GET /api/master/roles` (`industry_id` filter supported)
+- `GET /api/master/skills` (`category` and `market_trend` filters supported)
+- `GET /api/master/tools`
+
+Responses use `{ "items": [], "total": 0, "limit": 50, "offset": 0 }`.

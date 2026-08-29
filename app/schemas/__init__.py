@@ -17,6 +17,7 @@ from app.models.profile import (
     OnboardingOptionsResponse,
     OnboardingResponse,
     OnboardingSkillResponse,
+    ProfileResponse,
     UserProfileCreate,
     UserProfileResponse,
     UserProfileUpdate,
@@ -29,6 +30,7 @@ from app.models.master import (
     RoleReadWithIndustry,
     SkillRead,
     ToolRead,
+    Page,
 )
 
 # ── User Skills ──────────────────────────────────────────────────────
@@ -127,6 +129,7 @@ __all__ = [
     "OnboardingResponse",
     "OnboardingSkillResponse",
     "OnboardingOptionsResponse",
+    "ProfileResponse",
     "UserProfileCreate",
     "UserProfileUpdate",
     "UserProfileResponse",
@@ -136,6 +139,7 @@ __all__ = [
     "RoleReadWithIndustry",
     "SkillRead",
     "ToolRead",
+    "Page",
     # User Skills
     "UserSkillCreate",
     "UserSkillResponse",
