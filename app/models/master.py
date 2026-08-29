@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import DECIMAL, ForeignKey, Integer, String, Text
+from sqlalchemy import DECIMAL, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -38,6 +38,8 @@ class Skill(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True)
     category: Mapped[str | None] = mapped_column(String(50))  # technical | soft | domain
     market_trend: Mapped[str] = mapped_column(String(20), default="stable")  # declining | stable | rising
+
+    __table_args__ = (Index("uq_skills_name_lower", func.lower(name), unique=True),)
 
 
 class Tool(Base):

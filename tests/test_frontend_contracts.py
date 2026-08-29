@@ -66,6 +66,7 @@ class FrontendContractSchemaTests(TestCase):
             industry_name="Technology",
             work_duration_months=38,
             is_first_job=False,
+            daily_activities="Build and maintain backend services",
             career_goal=CareerGoal.level_up,
             skills=["Programming", "System Design"],
         )

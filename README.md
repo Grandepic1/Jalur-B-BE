@@ -101,3 +101,31 @@ For a Vercel frontend and separately hosted API:
    `https://<api-domain>/api/auth/google/callback`.
 5. Add the frontend production and approved preview origins to Google OAuth's authorized
    JavaScript origins.
+
+## Onboarding API
+
+All onboarding routes require a verified bearer-token user:
+
+- `GET /api/onboarding` returns completion state, profile, and selected skills.
+- `PUT /api/onboarding` creates or replaces onboarding data idempotently.
+- `GET /api/onboarding/options` returns career goals plus available industries and skills.
+
+`PUT /api/onboarding` accepts canonical backend values:
+
+```json
+{
+  "full_name": "Joan Orlando",
+  "current_role_name": "Backend Engineer",
+  "industry_name": "Technology",
+  "work_duration_months": 24,
+  "is_first_job": false,
+  "daily_activities": "Build and maintain APIs",
+  "career_goal": "level_up",
+  "target_role_name": "Senior Engineer",
+  "target_industry_name": "Technology",
+  "skills": ["Python", "API Design"]
+}
+```
+
+Career-goal values are `grow_current`, `level_up`, `change_role`, `change_industry`, and
+`undecided`. Skill names are case-insensitively unique, and each user may submit 1–8.

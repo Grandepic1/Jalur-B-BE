@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, String, Text, func
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -60,8 +60,53 @@ class UserProfileCreate(BaseModel):
     avatar_url: str | None = Field(None, max_length=500)
 
 
-class OnboardingCreate(UserProfileCreate):
-    skills: list[str] = Field(default_factory=list, max_length=8)
+class OnboardingCreate(BaseModel):
+    full_name: str = Field(..., min_length=1, max_length=150)
+    current_role_name: str = Field(..., min_length=1, max_length=100)
+    industry_name: str = Field(..., min_length=1, max_length=100)
+    work_duration_months: int = Field(..., strict=True, ge=0, le=960)
+    is_first_job: bool = Field(..., strict=True)
+    daily_activities: str = Field(..., min_length=1, max_length=5000)
+    career_goal: CareerGoal
+    target_role_name: str | None = Field(None, max_length=100)
+    target_industry_name: str | None = Field(None, max_length=100)
+    skills: list[str] = Field(..., min_length=1, max_length=8)
+
+    @field_validator(
+        "full_name",
+        "current_role_name",
+        "industry_name",
+        "daily_activities",
+        "target_role_name",
+        "target_industry_name",
+        mode="before",
+    )
+    @classmethod
+    def normalize_text(cls, value: object) -> object:
+        if value is None or not isinstance(value, str):
+            return value
+        normalized = " ".join(value.split())
+        return normalized or None
+
+    @field_validator("skills")
+    @classmethod
+    def normalize_skills(cls, values: list[object]) -> list[object]:
+        normalized: list[object] = []
+        seen: set[str] = set()
+        for value in values:
+            if not isinstance(value, str):
+                normalized.append(value)
+                continue
+            skill = " ".join(value.split())
+            if len(skill) > 100:
+                raise ValueError("skill names must not exceed 100 characters")
+            key = skill.lower()
+            if skill and key not in seen:
+                normalized.append(skill)
+                seen.add(key)
+        if not normalized:
+            raise ValueError("at least one non-empty skill is required")
+        return normalized
 
 
 class UserProfileUpdate(BaseModel):
@@ -95,3 +140,24 @@ class UserProfileResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class OnboardingSkillResponse(BaseModel):
+    id: int
+    name: str
+    category: str | None
+    market_trend: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OnboardingResponse(BaseModel):
+    completed: bool
+    profile: UserProfileResponse | None
+    skills: list[OnboardingSkillResponse]
+
+
+class OnboardingOptionsResponse(BaseModel):
+    career_goals: list[CareerGoal]
+    industries: list[str]
+    skills: list[OnboardingSkillResponse]
