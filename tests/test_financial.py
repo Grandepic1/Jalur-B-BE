@@ -88,7 +88,7 @@ class FinancialRouteTests(TestCase):
         self.assertEqual(set(paths["/api/financial"]), {"get", "put"})
         self.assertEqual(set(paths["/api/financial/assets"]), {"get", "post"})
         self.assertEqual(
-            set(paths["/api/financial/assets/{asset_id}"]), {"patch", "delete"}
+            set(paths["/api/financial/assets/{asset_id}"]), {"get", "patch", "delete"}
         )
         self.assertEqual(set(paths["/api/financial/runway"]), {"get", "post"})
         self.assertEqual(set(paths["/api/financial/runway/latest"]), {"get"})

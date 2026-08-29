@@ -6,7 +6,7 @@ from urllib.parse import urlencode, urlsplit, urlunsplit, parse_qsl
 
 import httpx
 from anyio import to_thread
-from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Query, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.auth.transport.requests import Request as GoogleRequest
@@ -34,6 +34,8 @@ from app.models.auth import (
     AuthTokenPurpose,
     AuthTokenResponse,
     ChangePasswordRequest,
+    DeleteAccountRequest,
+    EmailChangeRequest,
     ForgotPasswordRequest,
     GoogleCodeExchange,
     LoginRequest,
@@ -41,6 +43,7 @@ from app.models.auth import (
     OAuthLoginCode,
     ResetPasswordRequest,
     TokenActionRequest,
+    UsernameUpdateRequest,
 )
 from app.models.profile import UserProfile
 from app.models.user import User, UserCreate, UserResponse
@@ -91,28 +94,42 @@ async def _create_action_token(
     user_id: int,
     purpose: AuthTokenPurpose,
     lifetime: timedelta,
+    target_email: str | None = None,
+    supersede_existing: bool = False,
 ) -> str | None:
     now = datetime.now(UTC)
     lock_material = f"auth-action:{user_id}:{purpose.value}".encode("utf-8")
     lock_key = int.from_bytes(sha256(lock_material).digest()[:8], signed=True)
     # Serialize the cooldown check and insert across all API workers.
     await db.execute(select(func.pg_advisory_xact_lock(lock_key)))
-    recent_token = await db.scalar(
-        select(AuthActionToken.id).where(
-            AuthActionToken.user_id == user_id,
-            AuthActionToken.purpose == purpose,
-            AuthActionToken.used_at.is_(None),
-            AuthActionToken.created_at > now - timedelta(seconds=60),
+    if supersede_existing:
+        await db.execute(
+            update(AuthActionToken)
+            .where(
+                AuthActionToken.user_id == user_id,
+                AuthActionToken.purpose == purpose,
+                AuthActionToken.used_at.is_(None),
+            )
+            .values(used_at=now)
         )
-    )
-    if recent_token is not None:
-        return None
+    else:
+        recent_token = await db.scalar(
+            select(AuthActionToken.id).where(
+                AuthActionToken.user_id == user_id,
+                AuthActionToken.purpose == purpose,
+                AuthActionToken.used_at.is_(None),
+                AuthActionToken.created_at > now - timedelta(seconds=60),
+            )
+        )
+        if recent_token is not None:
+            return None
     raw_token = secrets.token_urlsafe(32)
     db.add(
         AuthActionToken(
             user_id=user_id,
             purpose=purpose,
             token_hash=hash_login_code(raw_token),
+            target_email=target_email,
             expires_at=now + lifetime,
         )
     )
@@ -264,7 +281,27 @@ async def verify_email(
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
 
-    action_token.used_at = datetime.now(UTC)
+    now = datetime.now(UTC)
+    action_token.used_at = now
+    if action_token.target_email is not None:
+        duplicate = await db.scalar(
+            select(User.id).where(
+                func.lower(User.email) == action_token.target_email.lower(),
+                User.id != user.id,
+            )
+        )
+        if duplicate is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already in use",
+            )
+        user.email = action_token.target_email.lower()
+        user.token_version = await db.scalar(
+            update(User)
+            .where(User.id == user.id)
+            .values(token_version=User.token_version + 1)
+            .returning(User.token_version)
+        )
     user.email_verified = True
     await db.execute(
         update(AuthActionToken)
@@ -273,9 +310,33 @@ async def verify_email(
             AuthActionToken.purpose == AuthTokenPurpose.verify_email,
             AuthActionToken.used_at.is_(None),
         )
-        .values(used_at=datetime.now(UTC))
+        .values(used_at=now)
     )
-    await db.commit()
+    if action_token.target_email is not None:
+        await db.execute(
+            update(AuthActionToken)
+            .where(
+                AuthActionToken.user_id == user.id,
+                AuthActionToken.used_at.is_(None),
+            )
+            .values(used_at=now)
+        )
+        await db.execute(
+            update(OAuthLoginCode)
+            .where(
+                OAuthLoginCode.user_id == user.id,
+                OAuthLoginCode.used_at.is_(None),
+            )
+            .values(used_at=now)
+        )
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already in use",
+        ) from None
     return user
 
 
@@ -417,6 +478,120 @@ async def logout(
     )
     await db.commit()
     return MessageResponse(message="Logged out")
+
+
+@router.patch("/username", response_model=UserResponse)
+async def update_username(
+    payload: UsernameUpdateRequest,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    locked_user = await db.scalar(
+        select(User).where(User.id == user.id).with_for_update()
+    )
+    duplicate = await db.scalar(
+        select(User.id).where(
+            func.lower(User.username) == payload.username.lower(),
+            User.id != user.id,
+        )
+    )
+    if duplicate is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists",
+        )
+    locked_user.username = payload.username
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists",
+        ) from None
+    await db.refresh(locked_user)
+    return locked_user
+
+
+@router.post("/change-email", response_model=MessageResponse)
+async def change_email(
+    payload: EmailChangeRequest,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> MessageResponse:
+    _ensure_email_delivery()
+    locked_user = await db.scalar(
+        select(User).where(User.id == user.id).with_for_update()
+    )
+    if locked_user.password is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Use password reset to add a password to this account",
+        )
+    password_valid = await to_thread.run_sync(
+        verify_password,
+        payload.current_password,
+        locked_user.password,
+    )
+    if not password_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is invalid",
+        )
+    target_email = str(payload.email).strip().lower()
+    if target_email == locked_user.email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email is unchanged",
+        )
+    duplicate = await db.scalar(
+        select(User.id).where(func.lower(User.email) == target_email)
+    )
+    if duplicate is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already in use",
+        )
+    token = await _create_action_token(
+        db,
+        locked_user.id,
+        AuthTokenPurpose.verify_email,
+        timedelta(hours=24),
+        target_email=target_email,
+        supersede_existing=True,
+    )
+    await db.commit()
+    background_tasks.add_task(_send_verification_email, target_email, token)
+    return MessageResponse(message="Verification email sent")
+
+
+@router.delete("/account", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    payload: DeleteAccountRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    locked_user = await db.scalar(
+        select(User).where(User.id == user.id).with_for_update()
+    )
+    if locked_user.password is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Use password reset to add a password to this account",
+        )
+    if not await to_thread.run_sync(
+        verify_password,
+        payload.current_password,
+        locked_user.password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is invalid",
+        )
+    await db.delete(locked_user)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/google/start")

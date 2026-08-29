@@ -4,12 +4,15 @@ from app.models.auth import (
     AuthTokenPurpose,
     AuthTokenResponse,
     ChangePasswordRequest,
+    DeleteAccountRequest,
+    EmailChangeRequest,
     ForgotPasswordRequest,
     GoogleCodeExchange,
     LoginRequest,
     MessageResponse,
     ResetPasswordRequest,
     TokenActionRequest,
+    UsernameUpdateRequest,
 )
 from app.models.profile import (
     CareerGoal,
@@ -34,7 +37,12 @@ from app.models.master import (
 )
 
 # ── User Skills ──────────────────────────────────────────────────────
-from app.models.user_skills import UserSkillCreate, UserSkillResponse
+from app.models.user_skills import (
+    UserSkillCreate,
+    UserSkillDetailResponse,
+    UserSkillResponse,
+    UserSkillUpdate,
+)
 
 # ── F1: Career Health Score ──────────────────────────────────────────
 from app.models.health import (
@@ -79,12 +87,15 @@ from app.models.pivot import (
 from app.models.evidence import (
     EvidenceItemCreate,
     EvidenceItemResponse,
+    EvidenceItemUpdate,
+    EvidenceStatsResponse,
     EvidenceType,
 )
 
 # ── F6: Personal Runway ─────────────────────────────────────────────
 from app.models.financial import (
     FinancialAssetCreate,
+    FinancialAssetBreakdown,
     FinancialAssetResponse,
     FinancialAssetType,
     FinancialAssetUpdate,
@@ -94,6 +105,8 @@ from app.models.financial import (
     FinancialSummaryResponse,
     LiquidityLevel,
     RunwayCalculationResponse,
+    RunwayScenarioRequest,
+    RunwayTrendResponse,
 )
 
 # ── F7: What If I Get Fired ─────────────────────────────────────────
@@ -109,8 +122,10 @@ from app.models.layoff import (
 # ── Skill Missions ──────────────────────────────────────────────────
 from app.models.missions import (
     MissionStatus,
+    MissionProgressResponse,
     SkillMissionCreate,
     SkillMissionResponse,
+    SkillMissionUpdate,
 )
 
 __all__ = [
@@ -125,6 +140,9 @@ __all__ = [
     "ForgotPasswordRequest",
     "ResetPasswordRequest",
     "ChangePasswordRequest",
+    "UsernameUpdateRequest",
+    "EmailChangeRequest",
+    "DeleteAccountRequest",
     "MessageResponse",
     "CareerGoal",
     "OnboardingCreate",
@@ -145,6 +163,8 @@ __all__ = [
     # User Skills
     "UserSkillCreate",
     "UserSkillResponse",
+    "UserSkillUpdate",
+    "UserSkillDetailResponse",
     # F1
     "HealthLevel",
     "HealthAssessmentCreate",
@@ -176,6 +196,8 @@ __all__ = [
     "EvidenceType",
     "EvidenceItemCreate",
     "EvidenceItemResponse",
+    "EvidenceItemUpdate",
+    "EvidenceStatsResponse",
     # F6
     "FinancialProfileCreate",
     "FinancialProfileResponse",
@@ -187,6 +209,9 @@ __all__ = [
     "FinancialAssetCreate",
     "FinancialAssetUpdate",
     "FinancialAssetResponse",
+    "FinancialAssetBreakdown",
+    "RunwayScenarioRequest",
+    "RunwayTrendResponse",
     # F7
     "ActionPhase",
     "LayoffScenario",
@@ -198,4 +223,6 @@ __all__ = [
     "MissionStatus",
     "SkillMissionCreate",
     "SkillMissionResponse",
+    "SkillMissionUpdate",
+    "MissionProgressResponse",
 ]

@@ -1,8 +1,10 @@
 from datetime import date, datetime
 from enum import Enum as PyEnum
+from typing import Literal
+from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, Boolean, DATE, TIMESTAMP, ForeignKey, String, Text, false
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from sqlalchemy import BigInteger, Boolean, DATE, TIMESTAMP, ForeignKey, Index, String, Text, false
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -44,18 +46,94 @@ class EvidenceItem(Base):
     )
 
 
+Index(
+    "ix_evidence_items_user_created",
+    EvidenceItem.user_id,
+    EvidenceItem.created_at.desc(),
+    EvidenceItem.id.desc(),
+)
+Index(
+    "ix_evidence_items_user_type_created",
+    EvidenceItem.user_id,
+    EvidenceItem.evidence_type,
+    EvidenceItem.created_at.desc(),
+    EvidenceItem.id.desc(),
+)
+
+
 # ─── Pydantic Schemas ────────────────────────────────────────────────
 
 
 class EvidenceItemCreate(BaseModel):
     evidence_type: EvidenceType
-    title: str = Field(..., max_length=200)
-    user_role: str = Field(..., max_length=100)
-    description: str
-    impact: str
+    title: str = Field(..., min_length=1, max_length=200)
+    user_role: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1, max_length=10000)
+    impact: str = Field(..., min_length=1, max_length=5000)
     evidence_date: date | None = None
     attachment_url: str | None = Field(None, max_length=500)
-    ai_generated: bool = False
+    ai_generated: Literal[False] = False
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("title", "user_role", "description", "impact")
+    @classmethod
+    def normalize_required_text(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("value cannot be blank")
+        return value
+
+    @field_validator("attachment_url")
+    @classmethod
+    def validate_attachment_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        parsed = urlsplit(value)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("attachment_url must be an HTTPS URL")
+        return value
+
+
+class EvidenceItemUpdate(BaseModel):
+    evidence_type: EvidenceType | None = None
+    title: str | None = Field(None, min_length=1, max_length=200)
+    user_role: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, min_length=1, max_length=10000)
+    impact: str | None = Field(None, min_length=1, max_length=5000)
+    evidence_date: date | None = None
+    attachment_url: str | None = Field(None, max_length=500)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("title", "user_role", "description", "impact")
+    @classmethod
+    def normalize_required_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("value cannot be blank")
+        return value
+
+    @field_validator("attachment_url")
+    @classmethod
+    def validate_attachment_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        parsed = urlsplit(value)
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError("attachment_url must be an HTTPS URL")
+        return value
+
+    @model_validator(mode="after")
+    def reject_null_required_fields(self) -> "EvidenceItemUpdate":
+        for field in ("evidence_type", "title", "user_role", "description", "impact"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
 
 
 class EvidenceItemResponse(BaseModel):
@@ -72,3 +150,10 @@ class EvidenceItemResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class EvidenceStatsResponse(BaseModel):
+    total: int
+    by_type: dict[EvidenceType, int]
+    human_authored: int
+    ai_generated: int

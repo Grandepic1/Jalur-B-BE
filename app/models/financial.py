@@ -98,6 +98,8 @@ class RunwayCalculation(Base):
     dependents_snapshot: Mapped[int | None] = mapped_column(Integer)
     liquid_funds_snapshot: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
     financial_runway_months: Mapped[Decimal] = mapped_column(DECIMAL(12, 2))
+    total_assets_snapshot: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
+    currency_snapshot: Mapped[str | None] = mapped_column(CHAR(3))
     calculated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
@@ -183,6 +185,8 @@ class RunwayCalculationResponse(BaseModel):
     dependents_snapshot: int | None
     liquid_funds_snapshot: Decimal | None
     financial_runway_months: Decimal
+    total_assets_snapshot: Decimal | None
+    currency_snapshot: str | None
     calculated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -282,3 +286,26 @@ class FinancialSummaryResponse(BaseModel):
     profile: FinancialProfileResponse
     assets: list[FinancialAssetResponse]
     runway: FinancialRunwayPreview
+
+
+class FinancialAssetBreakdown(BaseModel):
+    total_assets: Decimal
+    liquid_assets: Decimal
+    by_type: dict[FinancialAssetType, Decimal]
+    by_liquidity: dict[LiquidityLevel, Decimal]
+    asset_count: int
+    currency: str
+
+
+class RunwayScenarioRequest(BaseModel):
+    monthly_essential_expenses: Decimal = Field(..., gt=0)
+    monthly_debt_payment: Decimal = Field(Decimal("0"), ge=0)
+    liquid_assets: Decimal | None = Field(None, ge=0)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class RunwayTrendResponse(BaseModel):
+    latest: RunwayCalculationResponse | None
+    previous: RunwayCalculationResponse | None
+    delta_months: Decimal | None

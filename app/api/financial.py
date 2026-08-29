@@ -8,8 +8,10 @@ from app.api.auth import get_verified_user
 from app.core.database import get_db
 from app.models.financial import (
     FinancialAsset,
+    FinancialAssetBreakdown,
     FinancialAssetCreate,
     FinancialAssetResponse,
+    FinancialAssetType,
     FinancialAssetUpdate,
     FinancialProfile,
     FinancialProfileCreate,
@@ -19,6 +21,8 @@ from app.models.financial import (
     LiquidityLevel,
     RunwayCalculation,
     RunwayCalculationResponse,
+    RunwayScenarioRequest,
+    RunwayTrendResponse,
 )
 from app.models.master import Page
 from app.models.user import User
@@ -174,11 +178,34 @@ async def upsert_financial_profile(
 
 @router.get("/assets", response_model=list[FinancialAssetResponse])
 async def list_financial_assets(
+    asset_type: FinancialAssetType | None = None,
+    liquidity: LiquidityLevel | None = None,
+    q: str | None = Query(None, max_length=100),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     user: User = Depends(get_verified_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[FinancialAsset]:
     await _get_profile(db, user.id)
-    return await _assets(db, user.id)
+    filters = [FinancialAsset.user_id == user.id]
+    if asset_type is not None:
+        filters.append(FinancialAsset.asset_type == asset_type)
+    if liquidity is not None:
+        filters.append(FinancialAsset.liquidity == liquidity)
+    if q and q.strip():
+        escaped = q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        filters.append(FinancialAsset.name.ilike(f"%{escaped}%", escape="\\"))
+    return list(
+        (
+            await db.scalars(
+                select(FinancialAsset)
+                .where(*filters)
+                .order_by(FinancialAsset.created_at.desc(), FinancialAsset.id.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+        ).all()
+    )
 
 
 @router.post(
@@ -206,6 +233,54 @@ async def create_financial_asset(
     await db.commit()
     await db.refresh(asset)
     return asset
+
+
+@router.get("/assets/summary", response_model=FinancialAssetBreakdown)
+async def get_financial_asset_breakdown(
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> FinancialAssetBreakdown:
+    profile = await _get_profile(db, user.id)
+    type_rows = (
+        await db.execute(
+            select(FinancialAsset.asset_type, func.sum(FinancialAsset.amount))
+            .where(FinancialAsset.user_id == user.id)
+            .group_by(FinancialAsset.asset_type)
+        )
+    ).all()
+    liquidity_rows = (
+        await db.execute(
+            select(FinancialAsset.liquidity, func.sum(FinancialAsset.amount))
+            .where(FinancialAsset.user_id == user.id)
+            .group_by(FinancialAsset.liquidity)
+        )
+    ).all()
+    by_type = {asset_type: Decimal(amount) for asset_type, amount in type_rows}
+    by_liquidity = {
+        liquidity: Decimal(amount) for liquidity, amount in liquidity_rows
+    }
+    return FinancialAssetBreakdown(
+        total_assets=sum(by_type.values(), Decimal("0")),
+        liquid_assets=by_liquidity.get(LiquidityLevel.liquid, Decimal("0")),
+        by_type=by_type,
+        by_liquidity=by_liquidity,
+        asset_count=await db.scalar(
+            select(func.count())
+            .select_from(FinancialAsset)
+            .where(FinancialAsset.user_id == user.id)
+        )
+        or 0,
+        currency=profile.currency,
+    )
+
+
+@router.get("/assets/{asset_id}", response_model=FinancialAssetResponse)
+async def get_financial_asset(
+    asset_id: int,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> FinancialAsset:
+    return await _get_asset(db, user.id, asset_id)
 
 
 @router.patch("/assets/{asset_id}", response_model=FinancialAssetResponse)
@@ -286,11 +361,38 @@ async def save_runway_calculation(
         dependents_snapshot=profile.dependents,
         liquid_funds_snapshot=Decimal("0"),
         financial_runway_months=preview.financial_runway_months,
+        total_assets_snapshot=total,
+        currency_snapshot=profile.currency,
     )
     db.add(calculation)
     await db.commit()
     await db.refresh(calculation)
     return calculation
+
+
+@router.post("/runway/preview", response_model=FinancialRunwayPreview)
+async def preview_runway_scenario(
+    payload: RunwayScenarioRequest,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> FinancialRunwayPreview:
+    profile = await _get_profile(db, user.id)
+    total, current_liquid = await _asset_totals(db, user.id)
+    liquid = payload.liquid_assets if payload.liquid_assets is not None else current_liquid
+    scenario_total = total - current_liquid + liquid
+    monthly_burn = payload.monthly_essential_expenses + payload.monthly_debt_payment
+    runway = (liquid / monthly_burn).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+    return FinancialRunwayPreview(
+        total_assets=scenario_total,
+        liquid_assets=liquid,
+        monthly_burn=monthly_burn,
+        financial_runway_months=runway,
+        target_runway_months=TARGET_RUNWAY_MONTHS,
+        runway_gap_months=max(TARGET_RUNWAY_MONTHS - runway, Decimal("0")),
+        currency=profile.currency,
+    )
 
 
 @router.get("/runway/latest", response_model=RunwayCalculationResponse)
@@ -347,4 +449,37 @@ async def list_runway_history(
         total=total or 0,
         limit=limit,
         offset=offset,
+    )
+
+
+@router.get("/runway/trend", response_model=RunwayTrendResponse)
+async def get_runway_trend(
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+) -> RunwayTrendResponse:
+    calculations = list(
+        (
+            await db.scalars(
+                select(RunwayCalculation)
+                .where(RunwayCalculation.user_id == user.id)
+                .order_by(
+                    RunwayCalculation.calculated_at.desc(),
+                    RunwayCalculation.id.desc(),
+                )
+                .limit(2)
+            )
+        ).all()
+    )
+    latest = calculations[0] if calculations else None
+    previous = calculations[1] if len(calculations) > 1 else None
+    return RunwayTrendResponse(
+        latest=(RunwayCalculationResponse.model_validate(latest) if latest else None),
+        previous=(
+            RunwayCalculationResponse.model_validate(previous) if previous else None
+        ),
+        delta_months=(
+            latest.financial_runway_months - previous.financial_runway_months
+            if latest and previous
+            else None
+        ),
     )

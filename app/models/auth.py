@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -41,6 +41,7 @@ class AuthActionToken(Base):
     )
     purpose: Mapped[AuthTokenPurpose] = mapped_column(SAEnum(AuthTokenPurpose))
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    target_email: Mapped[str | None] = mapped_column(String(255))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
@@ -74,6 +75,33 @@ class ResetPasswordRequest(TokenActionRequest):
 class ChangePasswordRequest(BaseModel):
     current_password: str | None = Field(None, max_length=255)
     new_password: str = Field(..., min_length=8, max_length=255)
+
+
+class UsernameUpdateRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=50)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str) -> str:
+        value = value.strip()
+        if not value or not all(character.isalnum() or character in "_.-" for character in value):
+            raise ValueError("username may contain letters, numbers, underscores, dots, and hyphens")
+        return value
+
+
+class EmailChangeRequest(BaseModel):
+    email: EmailStr = Field(..., max_length=255)
+    current_password: str = Field(..., max_length=255)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class DeleteAccountRequest(BaseModel):
+    current_password: str = Field(..., max_length=255)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessageResponse(BaseModel):

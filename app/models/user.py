@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from sqlalchemy import BigInteger, Boolean, DateTime, Integer, String, false, func
+from sqlalchemy import BigInteger, Boolean, DateTime, Index, Integer, String, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -37,6 +37,10 @@ class User(Base):
         DateTime(timezone=True),
         onupdate=func.now(),
     )
+
+
+Index("uq_users_email_lower", func.lower(User.email), unique=True)
+Index("uq_users_username_lower", func.lower(User.username), unique=True)
 
 
 # ─── Pydantic Schemas ────────────────────────────────────────────────

@@ -136,6 +136,9 @@ Verified users who completed onboarding can use:
 
 - `GET /api/profile` to retrieve account identity, career profile, and selected skills.
 - `PATCH /api/profile` to update profile-owned fields.
+- `GET /api/profile/skills` to list skill proficiency and experience.
+- `PUT /api/profile/skills/{skill_id}` to add or replace proficiency data.
+- `DELETE /api/profile/skills/{skill_id}` to remove a skill from the profile.
 
 Email and username are intentionally not editable through the profile endpoint because
 account identity changes require separate verification flows.
@@ -160,14 +163,54 @@ source of truth for savings; profile settings only store monthly burn inputs.
 - `PUT /api/financial` creates or replaces monthly expense, debt, dependent, and currency settings.
 - `GET /api/financial/assets` lists assets.
 - `POST /api/financial/assets` creates an asset.
+- `GET /api/financial/assets/summary` returns deterministic type and liquidity totals.
+- `GET /api/financial/assets/{asset_id}` returns one owned asset.
 - `PATCH /api/financial/assets/{asset_id}` updates an owned asset.
 - `DELETE /api/financial/assets/{asset_id}` deletes an owned asset.
 - `GET /api/financial/runway` calculates a preview without saving it.
 - `POST /api/financial/runway` saves an immutable calculation snapshot.
 - `GET /api/financial/runway/latest` returns the latest saved snapshot.
 - `GET /api/financial/runway/history` returns snapshot history with `limit` and `offset`.
+- `POST /api/financial/runway/preview` evaluates unsaved user-supplied expense scenarios.
+- `GET /api/financial/runway/trend` compares the latest two saved snapshots.
 
 Runway is `liquid assets / (monthly essential expenses + monthly debt payment)`.
 Assets marked `requires_process` or `illiquid` remain in total assets but do not count
 toward runway. All assets must match the profile currency; currency changes are rejected
 while assets exist because this API does not perform foreign-exchange conversion.
+
+## Evidence API
+
+Verified users can manage human-authored career evidence:
+
+- `GET /api/evidence` supports type, text, date, `limit`, and `offset` filters.
+- `POST /api/evidence` creates evidence and always records it as human-authored.
+- `GET`, `PATCH`, and `DELETE /api/evidence/{evidence_id}` operate on owned evidence.
+- `GET /api/evidence/stats` returns factual counts by evidence type.
+
+Attachments are HTTPS URL metadata only. This API does not upload, proxy, or delete files.
+
+## Mission API
+
+Verified users can create and track their own skill missions:
+
+- `GET /api/missions` supports status, skill, due-date, overdue, and pagination filters.
+- `POST /api/missions` creates a user-authored mission.
+- `GET`, `PATCH`, and `DELETE /api/missions/{mission_id}` operate on owned missions.
+- `GET /api/missions/progress` returns status, overdue, and completion totals.
+
+Links to pivot skill gaps are ownership checked. Missions are never generated automatically.
+
+## Account API
+
+- `PATCH /api/auth/username` updates a verified user's unique username.
+- `POST /api/auth/change-email` verifies the current password and sends confirmation to the new address.
+- `POST /api/auth/verify-email` applies a confirmed email change and revokes existing JWTs.
+- `DELETE /api/auth/account` requires the current password and permanently deletes the account.
+
+## Dashboard API
+
+`GET /api/dashboard` returns only stored facts and deterministic arithmetic: account and
+profile identity, onboarding state, skill counts, evidence totals, mission progress, and
+current financial runway. Missing sections are returned as empty or `null`; no AI scores,
+generated recommendations, or placeholder analysis are included.

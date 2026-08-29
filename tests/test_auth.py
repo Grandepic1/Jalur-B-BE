@@ -87,6 +87,7 @@ class AuthSecurityTests(TestCase):
                 "user_id",
                 "purpose",
                 "token_hash",
+                "target_email",
                 "expires_at",
                 "used_at",
                 "created_at",
