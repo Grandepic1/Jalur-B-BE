@@ -150,3 +150,24 @@ Verified users can query paginated catalogs with `limit`, `offset`, and optional
 - `GET /api/master/tools`
 
 Responses use `{ "items": [], "total": 0, "limit": 50, "offset": 0 }`.
+
+## Financial API
+
+All financial routes require a verified bearer-token user. Individual assets are the
+source of truth for savings; profile settings only store monthly burn inputs.
+
+- `GET /api/financial` returns settings, assets, totals, and the current runway preview.
+- `PUT /api/financial` creates or replaces monthly expense, debt, dependent, and currency settings.
+- `GET /api/financial/assets` lists assets.
+- `POST /api/financial/assets` creates an asset.
+- `PATCH /api/financial/assets/{asset_id}` updates an owned asset.
+- `DELETE /api/financial/assets/{asset_id}` deletes an owned asset.
+- `GET /api/financial/runway` calculates a preview without saving it.
+- `POST /api/financial/runway` saves an immutable calculation snapshot.
+- `GET /api/financial/runway/latest` returns the latest saved snapshot.
+- `GET /api/financial/runway/history` returns snapshot history with `limit` and `offset`.
+
+Runway is `liquid assets / (monthly essential expenses + monthly debt payment)`.
+Assets marked `requires_process` or `illiquid` remain in total assets but do not count
+toward runway. All assets must match the profile currency; currency changes are rejected
+while assets exist because this API does not perform foreign-exchange conversion.

@@ -90,6 +90,8 @@ from app.models.financial import (
     FinancialAssetUpdate,
     FinancialProfileCreate,
     FinancialProfileResponse,
+    FinancialRunwayPreview,
+    FinancialSummaryResponse,
     LiquidityLevel,
     RunwayCalculationResponse,
 )
@@ -177,6 +179,8 @@ __all__ = [
     # F6
     "FinancialProfileCreate",
     "FinancialProfileResponse",
+    "FinancialRunwayPreview",
+    "FinancialSummaryResponse",
     "RunwayCalculationResponse",
     "FinancialAssetType",
     "LiquidityLevel",

@@ -2,8 +2,20 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, CHAR, DATETIME, DECIMAL, ForeignKey, Integer, String, Text, TIMESTAMP, func
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from sqlalchemy import (
+    BigInteger,
+    CHAR,
+    DECIMAL,
+    CheckConstraint,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    TIMESTAMP,
+    func,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,6 +41,28 @@ class LiquidityLevel(str, PyEnum):
 
 class FinancialProfile(Base):
     __tablename__ = "financial_profiles"
+    __table_args__ = (
+        CheckConstraint(
+            "available_savings >= 0",
+            name="ck_financial_profiles_available_savings_nonnegative",
+        ),
+        CheckConstraint(
+            "monthly_essential_expenses > 0",
+            name="ck_financial_profiles_expenses_positive",
+        ),
+        CheckConstraint(
+            "monthly_debt_payment IS NULL OR monthly_debt_payment >= 0",
+            name="ck_financial_profiles_debt_nonnegative",
+        ),
+        CheckConstraint(
+            "dependents IS NULL OR dependents >= 0",
+            name="ck_financial_profiles_dependents_nonnegative",
+        ),
+        CheckConstraint(
+            "other_liquid_funds IS NULL OR other_liquid_funds >= 0",
+            name="ck_financial_profiles_liquid_funds_nonnegative",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -43,11 +77,18 @@ class FinancialProfile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         server_default="CURRENT_TIMESTAMP",
+        onupdate=func.now(),
     )
 
 
 class RunwayCalculation(Base):
     __tablename__ = "runway_calculations"
+    __table_args__ = (
+        CheckConstraint(
+            "financial_runway_months >= 0",
+            name="ck_runway_calculations_months_nonnegative",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
@@ -56,15 +97,20 @@ class RunwayCalculation(Base):
     debt_payment_snapshot: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
     dependents_snapshot: Mapped[int | None] = mapped_column(Integer)
     liquid_funds_snapshot: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
-    financial_runway_months: Mapped[Decimal] = mapped_column(DECIMAL(6, 2))
+    financial_runway_months: Mapped[Decimal] = mapped_column(DECIMAL(12, 2))
     calculated_at: Mapped[datetime] = mapped_column(
-        DATETIME,
+        TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
     )
 
 
 class FinancialAsset(Base):
     __tablename__ = "financial_assets"
+    __table_args__ = (
+        CheckConstraint(
+            "amount >= 0", name="ck_financial_assets_amount_nonnegative"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     user_id: Mapped[int] = mapped_column(
@@ -86,26 +132,42 @@ class FinancialAsset(Base):
     user: Mapped["User"] = relationship()  # noqa: F821
 
 
+Index(
+    "ix_runway_calculations_user_calculated",
+    RunwayCalculation.user_id,
+    RunwayCalculation.calculated_at.desc(),
+    RunwayCalculation.id.desc(),
+)
+
+
 # ─── Pydantic Schemas ────────────────────────────────────────────────
 
 
 class FinancialProfileCreate(BaseModel):
-    available_savings: Decimal = Field(..., ge=0)
+    """Monthly financial settings; asset totals are derived by the API."""
+
     monthly_essential_expenses: Decimal = Field(..., gt=0)
-    monthly_debt_payment: Decimal | None = Field(None, ge=0)
-    dependents: int | None = Field(None, ge=0)
-    other_liquid_funds: Decimal | None = Field(None, ge=0)
-    currency: str = Field("IDR", max_length=3)
+    monthly_debt_payment: Decimal = Field(Decimal("0"), ge=0)
+    dependents: int = Field(0, ge=0)
+    currency: str = Field("IDR", min_length=3, max_length=3)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, value: str) -> str:
+        value = value.upper()
+        if not value.isalpha():
+            raise ValueError("currency must be a three-letter ISO code")
+        return value
 
 
 class FinancialProfileResponse(BaseModel):
     id: int
     user_id: int
-    available_savings: Decimal
     monthly_essential_expenses: Decimal
     monthly_debt_payment: Decimal | None
     dependents: int | None
-    other_liquid_funds: Decimal | None
     currency: str
     updated_at: datetime
 
@@ -127,21 +189,68 @@ class RunwayCalculationResponse(BaseModel):
 
 
 class FinancialAssetCreate(BaseModel):
-    name: str = Field(..., max_length=100)
-    amount: Decimal = Field(..., ge=0)
+    name: str = Field(..., min_length=1, max_length=100)
+    amount: Decimal = Field(..., gt=0)
     asset_type: FinancialAssetType
     liquidity: LiquidityLevel
-    note: str | None = None
+    note: str | None = Field(None, max_length=2000)
     currency: str = Field("IDR", min_length=3, max_length=3)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("name cannot be blank")
+        return value
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, value: str) -> str:
+        value = value.upper()
+        if not value.isalpha():
+            raise ValueError("currency must be a three-letter ISO code")
+        return value
 
 
 class FinancialAssetUpdate(BaseModel):
-    name: str | None = Field(None, max_length=100)
-    amount: Decimal | None = Field(None, ge=0)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    amount: Decimal | None = Field(None, gt=0)
     asset_type: FinancialAssetType | None = None
     liquidity: LiquidityLevel | None = None
-    note: str | None = None
+    note: str | None = Field(None, max_length=2000)
     currency: str | None = Field(None, min_length=3, max_length=3)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("name cannot be blank")
+        return value
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.upper()
+        if not value.isalpha():
+            raise ValueError("currency must be a three-letter ISO code")
+        return value
+
+    @model_validator(mode="after")
+    def reject_null_required_fields(self) -> "FinancialAssetUpdate":
+        for field in ("name", "amount", "asset_type", "liquidity", "currency"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
 
 
 class FinancialAssetResponse(BaseModel):
@@ -157,3 +266,19 @@ class FinancialAssetResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FinancialRunwayPreview(BaseModel):
+    total_assets: Decimal
+    liquid_assets: Decimal
+    monthly_burn: Decimal
+    financial_runway_months: Decimal
+    target_runway_months: Decimal
+    runway_gap_months: Decimal
+    currency: str
+
+
+class FinancialSummaryResponse(BaseModel):
+    profile: FinancialProfileResponse
+    assets: list[FinancialAssetResponse]
+    runway: FinancialRunwayPreview
