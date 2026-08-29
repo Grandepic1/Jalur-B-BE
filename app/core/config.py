@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     smtp_use_tls: bool = False
     auth_dev_auto_verify_email: bool = True
+    supabase_storage_endpoint: str = ""
+    supabase_storage_region: str = ""
+    supabase_storage_access_key_id: str = ""
+    supabase_storage_secret_access_key: str = ""
+    supabase_storage_bucket: str = "career-evidence"
 
     @property
     def allowed_frontend_origins(self) -> list[str]:
@@ -33,6 +38,16 @@ class Settings(BaseSettings):
     @property
     def email_delivery_configured(self) -> bool:
         return bool(self.smtp_host and self.smtp_from_email)
+
+    @property
+    def evidence_storage_configured(self) -> bool:
+        return bool(
+            self.supabase_storage_endpoint
+            and self.supabase_storage_region
+            and self.supabase_storage_access_key_id
+            and self.supabase_storage_secret_access_key
+            and self.supabase_storage_bucket
+        )
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,7 +1,6 @@
 from datetime import date, datetime
 from enum import Enum as PyEnum
 from typing import Literal
-from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import BigInteger, Boolean, DATE, TIMESTAMP, ForeignKey, Index, String, Text, false
@@ -39,6 +38,7 @@ class EvidenceItem(Base):
     impact: Mapped[str] = mapped_column(Text)
     evidence_date: Mapped[date | None] = mapped_column(DATE)
     attachment_url: Mapped[str | None] = mapped_column(String(500))
+    attachment_object_path: Mapped[str | None] = mapped_column(String(500))
     ai_generated: Mapped[bool] = mapped_column(Boolean, server_default=false())
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -71,7 +71,6 @@ class EvidenceItemCreate(BaseModel):
     description: str = Field(..., min_length=1, max_length=10000)
     impact: str = Field(..., min_length=1, max_length=5000)
     evidence_date: date | None = None
-    attachment_url: str | None = Field(None, max_length=500)
     ai_generated: Literal[False] = False
 
     model_config = ConfigDict(extra="forbid")
@@ -84,17 +83,6 @@ class EvidenceItemCreate(BaseModel):
             raise ValueError("value cannot be blank")
         return value
 
-    @field_validator("attachment_url")
-    @classmethod
-    def validate_attachment_url(cls, value: str | None) -> str | None:
-        if value is None:
-            return value
-        value = value.strip()
-        parsed = urlsplit(value)
-        if parsed.scheme != "https" or not parsed.netloc:
-            raise ValueError("attachment_url must be an HTTPS URL")
-        return value
-
 
 class EvidenceItemUpdate(BaseModel):
     evidence_type: EvidenceType | None = None
@@ -103,7 +91,6 @@ class EvidenceItemUpdate(BaseModel):
     description: str | None = Field(None, min_length=1, max_length=10000)
     impact: str | None = Field(None, min_length=1, max_length=5000)
     evidence_date: date | None = None
-    attachment_url: str | None = Field(None, max_length=500)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -115,17 +102,6 @@ class EvidenceItemUpdate(BaseModel):
         value = " ".join(value.split())
         if not value:
             raise ValueError("value cannot be blank")
-        return value
-
-    @field_validator("attachment_url")
-    @classmethod
-    def validate_attachment_url(cls, value: str | None) -> str | None:
-        if value is None:
-            return value
-        value = value.strip()
-        parsed = urlsplit(value)
-        if parsed.scheme != "https" or not parsed.netloc:
-            raise ValueError("attachment_url must be an HTTPS URL")
         return value
 
     @model_validator(mode="after")

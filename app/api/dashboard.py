@@ -6,6 +6,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth import get_verified_user
+from app.api.evidence import evidence_response
 from app.api.financial import _asset_totals, _runway_preview
 from app.core.database import get_db
 from app.models.dashboard import (
@@ -16,7 +17,7 @@ from app.models.dashboard import (
     DashboardResponse,
     DashboardSkillsSummary,
 )
-from app.models.evidence import EvidenceItem, EvidenceItemResponse
+from app.models.evidence import EvidenceItem
 from app.models.financial import FinancialProfile, RunwayCalculation
 from app.models.missions import MissionStatus, SkillMission, SkillMissionResponse
 from app.models.profile import UserProfile
@@ -154,7 +155,7 @@ async def get_dashboard(
         evidence=DashboardEvidenceSummary(
             total=sum(evidence_by_type.values()),
             by_type=evidence_by_type,
-            recent=[EvidenceItemResponse.model_validate(item) for item in recent_evidence],
+            recent=[evidence_response(item) for item in recent_evidence],
         ),
         missions=DashboardMissionSummary(
             total=mission_total,

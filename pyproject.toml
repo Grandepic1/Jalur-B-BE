@@ -8,6 +8,7 @@ dependencies = [
     "aiosmtplib>=5.1.2",
     "alembic>=1.19.1",
     "asyncpg>=0.31.0",
+    "boto3>=1.43.83",
     "fastapi[standard]>=0.141.1",
     "google-auth[requests]>=2.57.0",
     "httpx>=0.28.1",

@@ -186,9 +186,13 @@ Verified users can manage human-authored career evidence:
 - `GET /api/evidence` supports type, text, date, `limit`, and `offset` filters.
 - `POST /api/evidence` creates evidence and always records it as human-authored.
 - `GET`, `PATCH`, and `DELETE /api/evidence/{evidence_id}` operate on owned evidence.
+- `POST /api/evidence/{evidence_id}/attachment` optionally attaches one private file.
+- `DELETE /api/evidence/{evidence_id}/attachment` removes the attached file.
 - `GET /api/evidence/stats` returns factual counts by evidence type.
 
-Attachments are HTTPS URL metadata only. This API does not upload, proxy, or delete files.
+Creating evidence does not require an attachment. Attachments accept PDF, PNG, JPG, or
+WEBP content up to 10 MB and are stored in the configured private Supabase Storage bucket.
+Evidence responses contain a signed attachment URL that expires after 15 minutes.
 
 ## Mission API
 

@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from pydantic import ValidationError
 
+from app.api.evidence import MAX_ATTACHMENT_BYTES, detect_attachment_type
 from app.models.auth import DeleteAccountRequest, EmailChangeRequest, UsernameUpdateRequest
 from app.models.evidence import EvidenceItemCreate, EvidenceItemUpdate, EvidenceType
 from app.models.missions import MissionStatus, SkillMissionCreate, SkillMissionUpdate
@@ -18,13 +19,12 @@ class EvidenceSchemaTests(TestCase):
             user_role=" Engineer ",
             description=" Migrated  the platform ",
             impact=" Reduced  incidents ",
-            attachment_url="https://example.com/evidence.pdf",
         )
 
         self.assertEqual(evidence.title, "Platform migration")
         self.assertFalse(evidence.ai_generated)
 
-    def test_human_endpoint_rejects_ai_flag_and_unsafe_url(self) -> None:
+    def test_human_endpoint_rejects_ai_flag_and_external_attachment_url(self) -> None:
         base = {
             "evidence_type": EvidenceType.project,
             "title": "Migration",
@@ -35,15 +35,29 @@ class EvidenceSchemaTests(TestCase):
         with self.assertRaises(ValidationError):
             EvidenceItemCreate(**base, ai_generated=True)
         with self.assertRaises(ValidationError):
-            EvidenceItemCreate(**base, attachment_url="javascript:alert(1)")
+            EvidenceItemCreate(**base, attachment_url="https://example.com/file.pdf")
 
     def test_evidence_patch_clears_optional_fields_only(self) -> None:
         self.assertEqual(
-            EvidenceItemUpdate(attachment_url=None).model_dump(exclude_unset=True),
-            {"attachment_url": None},
+            EvidenceItemUpdate(evidence_date=None).model_dump(exclude_unset=True),
+            {"evidence_date": None},
         )
         with self.assertRaises(ValidationError):
             EvidenceItemUpdate(title=None)
+
+    def test_attachment_type_uses_file_signature(self) -> None:
+        self.assertEqual(detect_attachment_type(b"%PDF-1.7"), ("application/pdf", ".pdf"))
+        self.assertEqual(
+            detect_attachment_type(b"\x89PNG\r\n\x1a\ncontent"),
+            ("image/png", ".png"),
+        )
+        self.assertEqual(
+            detect_attachment_type(b"RIFF\x00\x00\x00\x00WEBPcontent"),
+            ("image/webp", ".webp"),
+        )
+        self.assertIsNone(detect_attachment_type(b"RIFF-not-webp"))
+        self.assertIsNone(detect_attachment_type(b"plain text"))
+        self.assertEqual(MAX_ATTACHMENT_BYTES, 10 * 1024 * 1024)
 
 
 class MissionSchemaTests(TestCase):
@@ -97,6 +111,9 @@ class NonAiRouteTests(TestCase):
         self.assertEqual(set(paths["/api/evidence/stats"]), {"get"})
         self.assertEqual(
             set(paths["/api/evidence/{evidence_id}"]), {"get", "patch", "delete"}
+        )
+        self.assertEqual(
+            set(paths["/api/evidence/{evidence_id}/attachment"]), {"post", "delete"}
         )
         self.assertEqual(set(paths["/api/missions"]), {"get", "post"})
         self.assertEqual(set(paths["/api/missions/progress"]), {"get"})

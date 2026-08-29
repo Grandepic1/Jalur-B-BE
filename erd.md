@@ -70,7 +70,7 @@ New vs v1: `tools_and_methods[]` stored via `tools` master + `ai_exposure_tools`
 New vs v1: current_role, industry, work_experience (wajib); preferred_roles[] normalized into own table; work_preferences text.
 
 ### F5 Career Evidence Vault → `evidence_items`
-Per payload: evidence_type enum (project/achievement/feedback/certificate/award/training/other), title, user_role, description, impact (all wajib), date + attachment_url opsional. Tags table removed (not in payload).
+Per payload: evidence_type enum (project/achievement/feedback/certificate/award/training/other), title, user_role, description, impact (all wajib), date + private attachment opsional. Tags table removed (not in payload).
 
 ### F6 Personal Runway → `financial_profiles` (1:1) + `runway_calculations`
 Payload fields only: available_savings, monthly_essential_expenses (wajib); monthly_debt_payment, dependents, other_liquid_funds (opsional). No income/target columns anymore.
