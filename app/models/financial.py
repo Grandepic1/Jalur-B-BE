@@ -62,6 +62,10 @@ class FinancialProfile(Base):
             "other_liquid_funds IS NULL OR other_liquid_funds >= 0",
             name="ck_financial_profiles_liquid_funds_nonnegative",
         ),
+        CheckConstraint(
+            "financial_readiness_score BETWEEN 0 AND 100",
+            name="ck_financial_profiles_readiness_score",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -73,6 +77,12 @@ class FinancialProfile(Base):
     monthly_debt_payment: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
     dependents: Mapped[int | None] = mapped_column(Integer)
     other_liquid_funds: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
+    financial_readiness_score: Mapped[Decimal] = mapped_column(
+        DECIMAL(5, 2), server_default="0"
+    )
+    financial_readiness_updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default=func.now()
+    )
     currency: Mapped[str] = mapped_column(CHAR(3), default="IDR")
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -170,6 +180,8 @@ class FinancialProfileResponse(BaseModel):
     monthly_essential_expenses: Decimal
     monthly_debt_payment: Decimal | None
     dependents: int | None
+    financial_readiness_score: Decimal
+    financial_readiness_updated_at: datetime
     currency: str
     updated_at: datetime
 

@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from decimal import Decimal, ROUND_HALF_UP
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -6,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth import get_verified_user
 from app.core.database import get_db
+from app.core.scoring import financial_readiness
 from app.models.financial import (
     FinancialAsset,
     FinancialAssetBreakdown,
@@ -80,12 +82,26 @@ async def _asset_totals(db: AsyncSession, user_id: int) -> tuple[Decimal, Decima
     return Decimal(total), Decimal(liquid)
 
 
-async def _sync_liquid_assets(
+def _calculate_financial_readiness(
+    profile: FinancialProfile, liquid_assets: Decimal
+) -> Decimal:
+    monthly_burn = profile.monthly_essential_expenses + (
+        profile.monthly_debt_payment or Decimal("0")
+    )
+    runway_months = (liquid_assets / monthly_burn).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+    return financial_readiness(runway_months, TARGET_RUNWAY_MONTHS)
+
+
+async def _sync_financial_state(
     db: AsyncSession, profile: FinancialProfile
 ) -> tuple[Decimal, Decimal]:
     total, liquid = await _asset_totals(db, profile.user_id)
     profile.available_savings = liquid
     profile.other_liquid_funds = Decimal("0")
+    profile.financial_readiness_score = _calculate_financial_readiness(profile, liquid)
+    profile.financial_readiness_updated_at = datetime.now(UTC)
     return total, liquid
 
 
@@ -170,7 +186,7 @@ async def upsert_financial_profile(
             setattr(profile, field, value)
 
     await db.flush()
-    await _sync_liquid_assets(db, profile)
+    await _sync_financial_state(db, profile)
     await db.commit()
     await db.refresh(profile)
     return profile
@@ -229,7 +245,7 @@ async def create_financial_asset(
     asset = FinancialAsset(user_id=user.id, **payload.model_dump())
     db.add(asset)
     await db.flush()
-    await _sync_liquid_assets(db, profile)
+    await _sync_financial_state(db, profile)
     await db.commit()
     await db.refresh(asset)
     return asset
@@ -303,7 +319,7 @@ async def update_financial_asset(
         setattr(asset, field, value)
 
     await db.flush()
-    await _sync_liquid_assets(db, profile)
+    await _sync_financial_state(db, profile)
     await db.commit()
     await db.refresh(asset)
     return asset
@@ -325,7 +341,7 @@ async def delete_financial_asset(
         )
     )
     await db.flush()
-    await _sync_liquid_assets(db, profile)
+    await _sync_financial_state(db, profile)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -351,7 +367,7 @@ async def save_runway_calculation(
 ) -> RunwayCalculation:
     await _lock_user(db, user.id)
     profile = await _get_profile(db, user.id)
-    total, liquid = await _sync_liquid_assets(db, profile)
+    total, liquid = await _sync_financial_state(db, profile)
     preview = _runway_preview(profile, total, liquid)
     calculation = RunwayCalculation(
         user_id=user.id,

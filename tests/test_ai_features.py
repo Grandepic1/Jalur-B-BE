@@ -8,6 +8,7 @@ import httpx
 from app.core.ai import AIProviderResponseError, GeminiProvider
 from app.core.config import settings
 from app.core.scoring import (
+    career_health,
     financial_readiness,
     health_level,
     risk_level,
@@ -44,6 +45,22 @@ class ScoringTests(TestCase):
         self.assertEqual(health_level(Decimal("60")), "medium")
         self.assertEqual(risk_level(Decimal("40")), "medium")
         self.assertEqual(risk_level(Decimal("70")), "high")
+
+    def test_current_financial_readiness_changes_career_health(self) -> None:
+        common = {
+            "performance_growth": Decimal("80"),
+            "skill_relevance": Decimal("80"),
+            "adaptability": Decimal("80"),
+            "mobility": Decimal("80"),
+        }
+        self.assertEqual(
+            career_health(**common, financial_readiness_score=Decimal("50")),
+            Decimal("74.00"),
+        )
+        self.assertEqual(
+            career_health(**common, financial_readiness_score=Decimal("100")),
+            Decimal("84.00"),
+        )
 
 
 class AiRouteContractTests(TestCase):

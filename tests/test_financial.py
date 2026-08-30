@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from pydantic import ValidationError
 
-from app.api.financial import _runway_preview
+from app.api.financial import _calculate_financial_readiness, _runway_preview
 from app.models.financial import (
     FinancialAssetCreate,
     FinancialAssetType,
@@ -79,6 +79,26 @@ class RunwayCalculationTests(TestCase):
         self.assertEqual(preview.monthly_burn, Decimal("5000000"))
         self.assertEqual(preview.financial_runway_months, Decimal("2.00"))
         self.assertEqual(preview.runway_gap_months, Decimal("4.00"))
+
+    def test_financial_readiness_tracks_current_liquidity_and_burn(self) -> None:
+        profile = FinancialProfile(
+            user_id=1,
+            available_savings=Decimal("0"),
+            monthly_essential_expenses=Decimal("4000000"),
+            monthly_debt_payment=Decimal("1000000"),
+            dependents=0,
+            other_liquid_funds=Decimal("0"),
+            currency="IDR",
+        )
+
+        self.assertEqual(
+            _calculate_financial_readiness(profile, Decimal("15000000")),
+            Decimal("50.00"),
+        )
+        self.assertEqual(
+            _calculate_financial_readiness(profile, Decimal("30000000")),
+            Decimal("100.00"),
+        )
 
 
 class FinancialRouteTests(TestCase):

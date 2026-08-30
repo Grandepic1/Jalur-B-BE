@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.ai_assessments import _health_response
 from app.api.auth import get_verified_user
 from app.api.financial import TARGET_RUNWAY_MONTHS, _asset_totals, _runway_preview
 from app.core.ai import AIProviderError, StructuredAIProvider, get_ai_provider
@@ -12,7 +13,6 @@ from app.core.database import get_db
 from app.core.scoring import (
     SCORE_VERSION,
     PROMPT_VERSION,
-    financial_readiness,
     score,
     weighted,
 )
@@ -122,10 +122,8 @@ async def create_layoff_simulation(
 
     total_assets, liquid_assets = await _asset_totals(db, user.id)
     runway = _runway_preview(financial_profile, total_assets, liquid_assets)
-    financial_score = financial_readiness(
-        runway.financial_runway_months, TARGET_RUNWAY_MONTHS
-    )
-    career_score = score(health.overall_score)
+    financial_score = score(financial_profile.financial_readiness_score)
+    career_score = score((await _health_response(db, health)).score)
     skill_score = score(exposure.skill_relevance_score or 0)
     mobility_score = score(pivot.match_score)
     resilience_score = weighted(

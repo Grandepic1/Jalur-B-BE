@@ -23,8 +23,8 @@ from app.core.scoring import (
     SCORE_VERSION,
     SIGNAL_SCORES,
     average,
+    career_health,
     exposure_level,
-    financial_readiness,
     health_level,
     risk_level,
     score,
@@ -166,7 +166,7 @@ async def _load_context(
         total_assets, liquid_assets = await _asset_totals(db, user_id)
         runway = _runway_preview(financial_profile, total_assets, liquid_assets)
         runway_months = runway.financial_runway_months
-        readiness = financial_readiness(runway_months, TARGET_RUNWAY_MONTHS)
+        readiness = score(financial_profile.financial_readiness_score)
 
     snapshot: dict[str, object] = {
         "role_name": role_name,
@@ -359,14 +359,12 @@ async def _create_bundle(
     )
     performance_score = SIGNAL_SCORES[ai_result.performance_growth.level.value]
     adaptability_score = SIGNAL_SCORES[ai_result.adaptability.level.value]
-    health_score = weighted(
-        [
-            (performance_score, Decimal("0.25")),
-            (relevance_score, Decimal("0.25")),
-            (adaptability_score, Decimal("0.15")),
-            (mobility_score, Decimal("0.15")),
-            (financial_score, Decimal("0.20")),
-        ]
+    health_score = career_health(
+        performance_growth=performance_score,
+        skill_relevance=relevance_score,
+        adaptability=adaptability_score,
+        mobility=mobility_score,
+        financial_readiness_score=financial_score,
     )
     provenance = {
         "provider": "gemini",
@@ -895,20 +893,45 @@ async def _health_response(
             )
         ).all()
     )
+    factor_scores = {item.dimension: item.score for item in factors}
+    financial_profile = await db.scalar(
+        select(FinancialProfile).where(FinancialProfile.user_id == assessment.user_id)
+    )
+    if financial_profile is not None and "financial_readiness" in factor_scores:
+        factor_scores["financial_readiness"] = score(
+            financial_profile.financial_readiness_score
+        )
+    required_dimensions = {
+        "performance_growth",
+        "skill_relevance",
+        "adaptability",
+        "mobility",
+        "financial_readiness",
+    }
+    current_score = assessment.overall_score
+    if required_dimensions.issubset(factor_scores):
+        current_score = career_health(
+            performance_growth=factor_scores["performance_growth"],
+            skill_relevance=factor_scores["skill_relevance"],
+            adaptability=factor_scores["adaptability"],
+            mobility=factor_scores["mobility"],
+            financial_readiness_score=factor_scores["financial_readiness"],
+        )
+    current_level = health_level(current_score)
     return HealthAssessmentResult(
         id=assessment.id,
         assessed_at=assessment.assessed_at,
-        score=assessment.overall_score,
-        level=assessment.level.value,
-        status=HEALTH_STATUS[assessment.level.value],
+        score=current_score,
+        level=current_level,
+        status=HEALTH_STATUS[current_level],
         summary=assessment.summary or "",
         data_confidence=assessment.data_confidence or Decimal("0"),
         factors=[
             ScoreExplanation(
                 key=item.dimension,
                 title=FACTOR_TITLES.get(item.dimension, item.dimension),
-                score=item.score,
-                level=health_level(item.score),
+                score=factor_scores[item.dimension],
+                level=health_level(factor_scores[item.dimension]),
                 explanation=item.note or "",
             )
             for item in factors

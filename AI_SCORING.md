@@ -74,6 +74,13 @@ Pivot Match =
 Financial Readiness = min(runway months / 6 * 100, 100)
 ```
 
+The current Financial Readiness value is recalculated in the same transaction whenever the
+financial profile or any asset is created, updated, or deleted. `GET /api/career-health/latest`
+combines that current value with the saved non-financial dimensions, so the Financial
+Readiness factor and overall Career Health respond to financial changes without rerunning
+Gemini. Existing layoff simulations remain immutable snapshots; a newly created simulation
+uses the current Financial Readiness and recomposed Career Health values.
+
 ```text
 Career Health =
   25% performance and growth
