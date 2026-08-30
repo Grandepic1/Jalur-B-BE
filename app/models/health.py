@@ -1,11 +1,22 @@
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, DATETIME, DECIMAL, ForeignKey, Integer, String, Text, VARCHAR
+from sqlalchemy import (
+    BigInteger,
+    DECIMAL,
+    TIMESTAMP,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.core.database import Base
 
@@ -37,8 +48,15 @@ class HealthAssessment(Base):
     career_progression: Mapped[str | None] = mapped_column(Text)
     overall_score: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
     level: Mapped[HealthLevel] = mapped_column(SAEnum(HealthLevel))
+    summary: Mapped[str | None] = mapped_column(Text)
+    data_confidence: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    provider_model: Mapped[str | None] = mapped_column(String(100))
+    prompt_version: Mapped[str | None] = mapped_column(String(50))
+    scoring_version: Mapped[str | None] = mapped_column(String(50))
+    market_baseline_version: Mapped[str | None] = mapped_column(String(64))
+    input_snapshot: Mapped[dict | None] = mapped_column(JSONB)
     assessed_at: Mapped[datetime] = mapped_column(
-        DATETIME,
+        TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
     )
 
@@ -49,16 +67,31 @@ class HealthAssessment(Base):
 
 class HealthScoreBreakdown(Base):
     __tablename__ = "health_score_breakdowns"
+    __table_args__ = (
+        UniqueConstraint(
+            "assessment_id", "dimension", name="uq_health_breakdown_dimension"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     assessment_id: Mapped[int] = mapped_column(
         ForeignKey("health_assessments.id", ondelete="CASCADE")
     )
-    dimension: Mapped[str] = mapped_column(String(50))  # performance | growth | skill_relevance | adaptability | mobility
+    dimension: Mapped[str] = mapped_column(
+        String(50)
+    )  # performance | growth | skill_relevance | adaptability | mobility
     score: Mapped[Decimal] = mapped_column(DECIMAL(5, 2))
     note: Mapped[str | None] = mapped_column(String(255))
 
     assessment: Mapped["HealthAssessment"] = relationship(back_populates="breakdowns")
+
+
+Index(
+    "ix_health_assessments_user_assessed",
+    HealthAssessment.user_id,
+    HealthAssessment.assessed_at.desc(),
+    HealthAssessment.id.desc(),
+)
 
 
 # ─── Pydantic Schemas ────────────────────────────────────────────────

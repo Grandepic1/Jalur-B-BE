@@ -59,6 +59,9 @@ main.py         # FastAPI app entrypoint
 6. Personal Runway
 7. What If I Get Fired?
 
+AI behavior, formulas, score thresholds, and limitations are documented in
+[`AI_SCORING.md`](AI_SCORING.md).
+
 Auth (register/login) is planned next on top of the existing `users` table.
 
 ## Authentication

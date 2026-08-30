@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     jwt_access_token_minutes: int = 60
     google_client_id: str = ""
     google_client_secret: str = ""
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.5-flash-lite"
+    gemini_timeout_seconds: float = 45
+    gemini_max_output_tokens: int = 4096
+    market_baseline_admin_key: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -48,6 +53,10 @@ class Settings(BaseSettings):
             and self.supabase_storage_secret_access_key
             and self.supabase_storage_bucket
         )
+
+    @property
+    def gemini_configured(self) -> bool:
+        return bool(self.gemini_api_key and self.gemini_model)
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -3,8 +3,18 @@ from decimal import Decimal
 from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, DATETIME, DECIMAL, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    DECIMAL,
+    TIMESTAMP,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -44,8 +54,14 @@ class PivotAnalysis(Base):
     shared_skills_count: Mapped[int | None] = mapped_column(Integer)
     missing_skills_count: Mapped[int | None] = mapped_column(Integer)
     summary: Mapped[str | None] = mapped_column(Text)
+    data_confidence: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    provider_model: Mapped[str | None] = mapped_column(String(100))
+    prompt_version: Mapped[str | None] = mapped_column(String(50))
+    scoring_version: Mapped[str | None] = mapped_column(String(50))
+    market_baseline_version: Mapped[str | None] = mapped_column(String(64))
+    input_snapshot: Mapped[dict | None] = mapped_column(JSONB)
     analyzed_at: Mapped[datetime] = mapped_column(
-        DATETIME,
+        TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
     )
 
@@ -56,6 +72,14 @@ class PivotAnalysis(Base):
         back_populates="analysis", cascade="all, delete-orphan"
     )
     target_role: Mapped["Role | None"] = relationship()  # noqa: F821
+
+
+Index(
+    "ix_pivot_analyses_user_analyzed",
+    PivotAnalysis.user_id,
+    PivotAnalysis.analyzed_at.desc(),
+    PivotAnalysis.id.desc(),
+)
 
 
 class PivotPreferredRole(Base):
@@ -80,14 +104,23 @@ class PivotSkillGap(Base):
     analysis_id: Mapped[int] = mapped_column(
         ForeignKey("pivot_analyses.id", ondelete="CASCADE")
     )
+    preferred_role_id: Mapped[int | None] = mapped_column(
+        ForeignKey("pivot_preferred_roles.id", ondelete="CASCADE")
+    )
     skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id", ondelete="CASCADE"))
-    current_level: Mapped[int | None] = mapped_column(Integer)  # 1-5, NULL jika belum dimiliki
+    current_level: Mapped[int | None] = mapped_column(
+        Integer
+    )  # 1-5, NULL jika belum dimiliki
     required_level: Mapped[int] = mapped_column(Integer)  # 1-5
     gap_level: Mapped[GapLevel] = mapped_column(SAEnum(GapLevel))
     recommended_action: Mapped[str | None] = mapped_column(String(255))
 
     analysis: Mapped["PivotAnalysis"] = relationship(back_populates="skill_gaps")
+    preferred_role: Mapped["PivotPreferredRole | None"] = relationship()
     skill: Mapped["Skill"] = relationship()  # noqa: F821
+
+
+Index("ix_pivot_skill_gaps_preferred_role_id", PivotSkillGap.preferred_role_id)
 
 
 # ─── Pydantic Schemas ────────────────────────────────────────────────

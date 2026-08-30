@@ -25,6 +25,8 @@ from app.models.pivot import PivotAnalysis, PivotPreferredRole, PivotSkillGap
 
 # ── F5: Career Evidence Vault ────────────────────────────────────────
 from app.models.evidence import EvidenceItem
+from app.models.insights import WeeklyCareerInsight
+from app.models.market_baseline import MarketBaseline, MarketBaselineSignal
 
 # ── F6: Personal Runway ─────────────────────────────────────────────
 from app.models.financial import FinancialAsset, FinancialProfile, RunwayCalculation
@@ -67,6 +69,9 @@ __all__ = [
     "PivotSkillGap",
     # F5
     "EvidenceItem",
+    "WeeklyCareerInsight",
+    "MarketBaseline",
+    "MarketBaselineSignal",
     # F6
     "FinancialProfile",
     "FinancialAsset",

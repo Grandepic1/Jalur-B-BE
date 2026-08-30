@@ -24,6 +24,19 @@ class EvidenceSchemaTests(TestCase):
         self.assertEqual(evidence.title, "Platform migration")
         self.assertFalse(evidence.ai_generated)
 
+    def test_evidence_impact_is_optional_and_clearable(self) -> None:
+        evidence = EvidenceItemCreate(
+            evidence_type=EvidenceType.project,
+            title="Migration",
+            user_role="Engineer",
+            description="Migrated the platform",
+        )
+        self.assertIsNone(evidence.impact)
+        self.assertEqual(
+            EvidenceItemUpdate(impact=None).model_dump(exclude_unset=True),
+            {"impact": None},
+        )
+
     def test_human_endpoint_rejects_ai_flag_and_external_attachment_url(self) -> None:
         base = {
             "evidence_type": EvidenceType.project,

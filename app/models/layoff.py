@@ -2,9 +2,22 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum as PyEnum
 
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, BOOLEAN, DATETIME, DECIMAL, DATE, ForeignKey, Integer, String, Text
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import (
+    BigInteger,
+    BOOLEAN,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -45,12 +58,17 @@ class LayoffSimulation(Base):
     job_mobility_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     overall_resilience_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     financial_runway_months: Mapped[Decimal | None] = mapped_column(DECIMAL(6, 2))
+    target_runway_months: Mapped[Decimal | None] = mapped_column(DECIMAL(6, 2))
     financial_gap: Mapped[Decimal | None] = mapped_column(DECIMAL(15, 2))
     estimated_preparation_time_months: Mapped[int | None] = mapped_column(Integer)
     evidence_count: Mapped[int] = mapped_column(Integer, server_default="0")
     summary: Mapped[str | None] = mapped_column(Text)
+    provider_model: Mapped[str | None] = mapped_column(String(100))
+    prompt_version: Mapped[str | None] = mapped_column(String(50))
+    scoring_version: Mapped[str | None] = mapped_column(String(50))
+    input_snapshot: Mapped[dict | None] = mapped_column(JSONB)
     simulated_at: Mapped[datetime] = mapped_column(
-        DATETIME,
+        TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
     )
 
@@ -60,8 +78,21 @@ class LayoffSimulation(Base):
     best_pivot_analysis: Mapped["PivotAnalysis | None"] = relationship()  # noqa: F821
 
 
+Index(
+    "ix_layoff_simulations_user_simulated",
+    LayoffSimulation.user_id,
+    LayoffSimulation.simulated_at.desc(),
+    LayoffSimulation.id.desc(),
+)
+
+
 class SimulationActionItem(Base):
     __tablename__ = "simulation_action_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "simulation_id", "step_order", name="uq_simulation_action_order"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     simulation_id: Mapped[int] = mapped_column(

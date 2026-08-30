@@ -18,7 +18,9 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth import get_verified_user
+from app.core.ai import AIProviderError, StructuredAIProvider, get_ai_provider
 from app.core.database import get_db
+from app.core.scoring import PROMPT_VERSION
 from app.core.storage import get_evidence_storage
 from app.models.evidence import (
     EvidenceItem,
@@ -29,6 +31,12 @@ from app.models.evidence import (
     EvidenceType,
 )
 from app.models.master import Page
+from app.models.ai_features import (
+    EvidenceAssistantDraft,
+    EvidenceAssistantDraftRequest,
+    EvidenceAssistantDraftResponse,
+)
+from app.models.profile import UserProfile
 from app.models.user import User
 
 
@@ -95,6 +103,14 @@ def storage_unavailable() -> HTTPException:
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         detail="Evidence attachment storage is unavailable",
     )
+
+
+EVIDENCE_ASSISTANT_INSTRUCTION = """
+Restructure the user's career story into concise Indonesian evidence. Preserve the user's
+meaning and facts. Never invent metrics, dates, employers, responsibilities, or outcomes.
+If impact is not explicit in the supplied story or impact field, return null for impact.
+The title must be factual and concise. Return only title, description, and impact.
+"""
 
 
 @router.get("", response_model=Page[EvidenceItemResponse])
@@ -197,6 +213,68 @@ async def create_evidence(
         user_id=user.id,
         **payload.model_dump(exclude={"ai_generated"}),
         ai_generated=False,
+    )
+    db.add(evidence)
+    await db.commit()
+    await db.refresh(evidence)
+    return evidence_response(evidence)
+
+
+@router.post("/assistant/draft", response_model=EvidenceAssistantDraftResponse)
+async def draft_evidence_with_ai(
+    payload: EvidenceAssistantDraftRequest,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+    provider: StructuredAIProvider = Depends(get_ai_provider),
+) -> EvidenceAssistantDraftResponse:
+    profile = await db.scalar(select(UserProfile).where(UserProfile.user_id == user.id))
+    if profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Complete onboarding before using the Evidence Assistant",
+        )
+    try:
+        draft = await provider.generate_structured(
+            response_type=EvidenceAssistantDraft,
+            system_instruction=EVIDENCE_ASSISTANT_INSTRUCTION,
+            input_data={
+                "evidence_type": payload.evidence_type.value,
+                "story": payload.story,
+                "impact": payload.impact,
+                "current_role": profile.current_role_name,
+            },
+        )
+    except AIProviderError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    if payload.impact and payload.impact.strip():
+        draft.impact = payload.impact.strip()
+    return EvidenceAssistantDraftResponse(
+        **draft.model_dump(),
+        evidence_type=payload.evidence_type,
+        user_role=profile.current_role_name,
+        evidence_date=payload.evidence_date,
+        model=provider.model,
+        prompt_version=PROMPT_VERSION,
+    )
+
+
+@router.post(
+    "/assistant",
+    response_model=EvidenceItemResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def save_ai_assisted_evidence(
+    payload: EvidenceItemCreate,
+    user: User = Depends(get_verified_user),
+    db: AsyncSession = Depends(get_db),
+    provider: StructuredAIProvider = Depends(get_ai_provider),
+) -> EvidenceItemResponse:
+    evidence = EvidenceItem(
+        user_id=user.id,
+        **payload.model_dump(exclude={"ai_generated"}),
+        ai_generated=True,
+        ai_model=provider.model,
+        ai_prompt_version=PROMPT_VERSION,
     )
     db.add(evidence)
     await db.commit()

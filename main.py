@@ -14,6 +14,10 @@ from app.api.financial import router as financial_router
 from app.api.evidence import router as evidence_router
 from app.api.missions import router as missions_router
 from app.api.dashboard import router as dashboard_router
+from app.api.ai_assessments import router as ai_assessments_router
+from app.api.layoff_simulations import router as layoff_simulations_router
+from app.api.ai_insights import router as ai_insights_router
+from app.api.market_baselines import router as market_baselines_router
 
 
 @asynccontextmanager
@@ -47,6 +51,10 @@ app.include_router(financial_router)
 app.include_router(evidence_router)
 app.include_router(missions_router)
 app.include_router(dashboard_router)
+app.include_router(ai_assessments_router)
+app.include_router(layoff_simulations_router)
+app.include_router(ai_insights_router)
+app.include_router(market_baselines_router)
 
 
 @app.get("/health", tags=["health"])

@@ -2,7 +2,10 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import BigInteger, DATETIME, ForeignKey, String, Text
+from decimal import Decimal
+
+from sqlalchemy import BigInteger, DECIMAL, TIMESTAMP, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,9 +36,18 @@ class RiskScan(Base):
     job_description: Mapped[str | None] = mapped_column(Text)
     job_description_url: Mapped[str | None] = mapped_column(String(500))
     overall_risk_level: Mapped[RiskLevel] = mapped_column(SAEnum(RiskLevel))
+    overall_score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     summary: Mapped[str | None] = mapped_column(Text)
+    analysis_description: Mapped[str | None] = mapped_column(Text)
+    early_warning: Mapped[str | None] = mapped_column(Text)
+    data_confidence: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
+    provider_model: Mapped[str | None] = mapped_column(String(100))
+    prompt_version: Mapped[str | None] = mapped_column(String(50))
+    scoring_version: Mapped[str | None] = mapped_column(String(50))
+    market_baseline_version: Mapped[str | None] = mapped_column(String(64))
+    input_snapshot: Mapped[dict | None] = mapped_column(JSONB)
     scanned_at: Mapped[datetime] = mapped_column(
-        DATETIME,
+        TIMESTAMP,
         server_default="CURRENT_TIMESTAMP",
     )
 
@@ -47,13 +59,26 @@ class RiskScan(Base):
     )
 
 
+Index(
+    "ix_risk_scans_user_scanned",
+    RiskScan.user_id,
+    RiskScan.scanned_at.desc(),
+    RiskScan.id.desc(),
+)
+
+
 class RiskFactor(Base):
     __tablename__ = "risk_factors"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    scan_id: Mapped[int] = mapped_column(ForeignKey("risk_scans.id", ondelete="CASCADE"))
-    source: Mapped[str] = mapped_column(String(50))  # industry_shift | market_demand | role_change | skill_dependency | ai_advancement
+    scan_id: Mapped[int] = mapped_column(
+        ForeignKey("risk_scans.id", ondelete="CASCADE")
+    )
+    source: Mapped[str] = mapped_column(
+        String(50)
+    )  # industry_shift | market_demand | role_change | skill_dependency | ai_advancement
     severity: Mapped[RiskLevel] = mapped_column(SAEnum(RiskLevel))
+    score: Mapped[Decimal | None] = mapped_column(DECIMAL(5, 2))
     description: Mapped[str] = mapped_column(Text)
 
     scan: Mapped["RiskScan"] = relationship(back_populates="factors")
@@ -63,7 +88,9 @@ class RiskScanSkill(Base):
     __tablename__ = "risk_scan_skills"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    scan_id: Mapped[int] = mapped_column(ForeignKey("risk_scans.id", ondelete="CASCADE"))
+    scan_id: Mapped[int] = mapped_column(
+        ForeignKey("risk_scans.id", ondelete="CASCADE")
+    )
     skill_id: Mapped[int] = mapped_column(ForeignKey("skills.id", ondelete="CASCADE"))
 
     scan: Mapped["RiskScan"] = relationship(back_populates="skills")
