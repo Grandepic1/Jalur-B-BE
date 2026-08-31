@@ -1,20 +1,21 @@
 # AI and scoring
 
-Jalur B uses Gemini for bounded classification and Indonesian explanations. Numeric scores
-are calculated by backend code under `career-resilience-v1`; Gemini never supplies final
-numeric scores.
+Jalur B uses DeepSeek through NVIDIA NIM for bounded classification and Indonesian
+explanations. Numeric scores are calculated by backend code under `career-resilience-v1`;
+the model never supplies final numeric scores.
 
 ## Provider
 
-- Provider: Google Gemini API through Google AI Studio
-- Default model: `gemini-3.5-flash-lite`
+- Provider: NVIDIA NIM through its OpenAI-compatible API
+- Default model: `deepseek-ai/deepseek-v4-pro-0813`
 - Prompt version: `career-analysis-v1`
 - Structured JSON is validated with Pydantic before any assessment is persisted.
 - Provider failures do not create partial assessment snapshots.
 
-Model knowledge is not a substitute for sourced live market data. Reviewed market baselines
-use Gemini Google Search grounding, retain citation and grounding metadata, and remain drafts
-until explicitly approved. Assessments prefer matching signals from the current approved
+Model knowledge is not a substitute for sourced live market data. NVIDIA NIM chat completions
+do not provide grounded web-search citations, so market-baseline refresh returns an explicit
+unavailable response rather than creating unsourced drafts. Existing approved baselines remain
+usable. Assessments prefer matching signals from the current approved
 baseline and expose the immutable `market_baseline_version`; unmatched subjects remain model
 estimates and do not claim grounding.
 
@@ -22,9 +23,8 @@ estimates and do not claim grounding.
 
 - Set `MARKET_BASELINE_ADMIN_KEY` to protect management operations. Management calls also
   require a verified user access token so the creator and approver are auditable.
-- A scheduled job can call `POST /api/market-baselines/refresh` with the complete role,
-  industry, and skill subject catalog. Gemini must return Google Search grounding citations or
-  the draft is rejected.
+- `POST /api/market-baselines/refresh` requires a provider with grounded web-search citations.
+  It is unavailable with the NVIDIA NIM provider, which prevents fabricated sources.
 - Review drafts with `GET /api/market-baselines?status=draft` and their citations.
 - Approve with `POST /api/market-baselines/{id}/approve`, or reject with
   `POST /api/market-baselines/{id}/reject`. Approving archives the previous baseline and never
@@ -78,8 +78,8 @@ The current Financial Readiness value is recalculated in the same transaction wh
 financial profile or any asset is created, updated, or deleted. `GET /api/career-health/latest`
 combines that current value with the saved non-financial dimensions, so the Financial
 Readiness factor and overall Career Health respond to financial changes without rerunning
-Gemini. Existing layoff simulations remain immutable snapshots; a newly created simulation
-uses the current Financial Readiness and recomposed Career Health values.
+the AI provider. Existing layoff simulations remain immutable snapshots; a newly created
+simulation uses the current Financial Readiness and recomposed Career Health values.
 
 ```text
 Career Health =

@@ -13,10 +13,11 @@ class Settings(BaseSettings):
     jwt_access_token_minutes: int = 60
     google_client_id: str = ""
     google_client_secret: str = ""
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.5-flash-lite"
-    gemini_timeout_seconds: float = 45
-    gemini_max_output_tokens: int = 4096
+    nvidia_api_key: str = ""
+    nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    nvidia_model: str = "deepseek-ai/deepseek-v4-pro-0813"
+    nvidia_timeout_seconds: float = 120
+    nvidia_max_tokens: int = 16384
     market_baseline_admin_key: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
@@ -55,8 +56,8 @@ class Settings(BaseSettings):
         )
 
     @property
-    def gemini_configured(self) -> bool:
-        return bool(self.gemini_api_key and self.gemini_model)
+    def nvidia_configured(self) -> bool:
+        return bool(self.nvidia_api_key and self.nvidia_base_url and self.nvidia_model)
 
     model_config = SettingsConfigDict(
         env_file=".env",

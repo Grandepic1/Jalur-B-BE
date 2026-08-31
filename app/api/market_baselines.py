@@ -31,7 +31,7 @@ router = APIRouter(prefix="/api/market-baselines", tags=["market baselines"])
 MARKET_BASELINE_PROMPT_VERSION = "market-baseline-v1"
 
 MARKET_BASELINE_INSTRUCTION = """
-Research current Indonesian labor-market conditions using Google Search. Prefer official
+Research current Indonesian labor-market conditions. Prefer official
 government, primary research, and established labor-market sources. Classify every supplied
 subject exactly once and preserve each subject name and type verbatim. For roles classify
 market_demand as weak, moderate, or strong. For industries classify industry_stability as
@@ -102,7 +102,7 @@ async def refresh_market_baseline(
     if set(generated) != set(requested):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Gemini did not classify every requested market subject exactly once",
+            detail="AI provider did not classify every requested market subject exactly once",
         )
 
     now = datetime.now(UTC)

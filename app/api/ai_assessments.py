@@ -367,7 +367,7 @@ async def _create_bundle(
         financial_readiness_score=financial_score,
     )
     provenance = {
-        "provider": "gemini",
+        "provider": "nvidia_nim",
         "model": provider_model,
         "prompt_version": PROMPT_VERSION,
         "scoring_version": SCORE_VERSION,
@@ -715,7 +715,7 @@ async def create_career_assessments(
     if generated_skills != expected_skills:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Gemini did not classify every supplied skill exactly once",
+            detail="AI provider did not classify every supplied skill exactly once",
         )
     return await _create_bundle(
         db=db,

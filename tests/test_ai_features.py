@@ -1,11 +1,16 @@
 import json
 from decimal import Decimal
+from types import SimpleNamespace
 from unittest import IsolatedAsyncioTestCase, TestCase
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
+from pydantic import ValidationError
 
-from app.core.ai import AIProviderResponseError, GeminiProvider
+from app.core.ai import (
+    AIProviderResponseError,
+    AIProviderUnavailable,
+    NvidiaNIMProvider,
+)
 from app.core.config import settings
 from app.core.scoring import (
     career_health,
@@ -20,7 +25,6 @@ from app.models.market_baseline import (
     MarketBaselineRefreshRequest,
     MarketSignalDraft,
 )
-from pydantic import ValidationError
 from main import app
 
 
@@ -92,174 +96,84 @@ class AiRouteContractTests(TestCase):
             self.assertEqual(set(paths[path]), methods)
 
 
-class GeminiProviderTests(IsolatedAsyncioTestCase):
+class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
     async def test_structured_response_is_validated(self) -> None:
-        payload = {
-            "candidates": [
-                {
-                    "finishReason": "STOP",
-                    "content": {
-                        "parts": [
-                            {
-                                "text": json.dumps(
-                                    {
-                                        "title": "Migrasi platform",
-                                        "description": "Memigrasikan platform.",
-                                        "impact": "Dampak belum disebutkan.",
-                                    }
-                                )
-                            }
-                        ]
-                    },
-                }
-            ]
-        }
-
-        def handler(request: httpx.Request) -> httpx.Response:
-            self.assertEqual(request.headers["x-goog-api-key"], "test-key")
-            return httpx.Response(200, json=payload)
+        client = MagicMock()
+        client.chat.completions.create = AsyncMock(
+            return_value=SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        finish_reason="stop",
+                        message=SimpleNamespace(
+                            content=json.dumps(
+                                {
+                                    "title": "Migrasi platform",
+                                    "description": "Memigrasikan platform.",
+                                    "impact": "Dampak belum disebutkan.",
+                                }
+                            )
+                        ),
+                    )
+                ]
+            )
+        )
 
         with (
-            patch.object(settings, "gemini_api_key", "test-key"),
-            patch.object(settings, "gemini_model", "test-model"),
+            patch.object(settings, "nvidia_api_key", "test-key"),
+            patch.object(settings, "nvidia_model", "test-model"),
         ):
-            async with httpx.AsyncClient(
-                transport=httpx.MockTransport(handler)
-            ) as client:
-                result = await GeminiProvider(client).generate_structured(
-                    response_type=EvidenceAssistantDraft,
-                    system_instruction="Test",
-                    input_data={"story": "test"},
-                )
+            result = await NvidiaNIMProvider(client).generate_structured(
+                response_type=EvidenceAssistantDraft,
+                system_instruction="Test",
+                input_data={"story": "test"},
+            )
         self.assertEqual(result.title, "Migrasi platform")
+        request = client.chat.completions.create.await_args.kwargs
+        self.assertEqual(request["model"], "test-model")
+        self.assertEqual(request["temperature"], 1)
+        self.assertEqual(request["top_p"], 0.95)
+        self.assertEqual(request["max_tokens"], settings.nvidia_max_tokens)
+        self.assertEqual(request["seed"], 42)
+        self.assertEqual(
+            request["extra_body"],
+            {"chat_template_kwargs": {"thinking": False}},
+        )
 
     async def test_invalid_json_is_rejected(self) -> None:
-        def handler(_: httpx.Request) -> httpx.Response:
-            return httpx.Response(
-                200,
-                json={
-                    "candidates": [
-                        {
-                            "finishReason": "STOP",
-                            "content": {"parts": [{"text": "not json"}]},
-                        }
-                    ]
-                },
-            )
-
-        with (
-            patch.object(settings, "gemini_api_key", "test-key"),
-            patch.object(settings, "gemini_model", "test-model"),
-        ):
-            async with httpx.AsyncClient(
-                transport=httpx.MockTransport(handler)
-            ) as client:
-                with self.assertRaises(AIProviderResponseError):
-                    await GeminiProvider(client).generate_structured(
-                        response_type=EvidenceAssistantDraft,
-                        system_instruction="Test",
-                        input_data={},
+        client = MagicMock()
+        client.chat.completions.create = AsyncMock(
+            return_value=SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        finish_reason="stop",
+                        message=SimpleNamespace(content="not json"),
                     )
-
-    async def test_grounded_response_requires_and_returns_citations(self) -> None:
-        output = {
-            "summary": "Permintaan tetap kuat.",
-            "signals": [
-                {
-                    "subject_type": "role",
-                    "subject_name": "Software Engineer",
-                    "signal_type": "market_demand",
-                    "classification": "strong",
-                    "rationale": "Didukung sumber pasar kerja terkini.",
-                }
-            ],
-        }
-
-        def handler(request: httpx.Request) -> httpx.Response:
-            body = json.loads(request.content)
-            self.assertEqual(body["tools"], [{"googleSearch": {}}])
-            self.assertIn("responseJsonSchema", body["generationConfig"])
-            return httpx.Response(
-                200,
-                json={
-                    "candidates": [
-                        {
-                            "finishReason": "STOP",
-                            "content": {"parts": [{"text": json.dumps(output)}]},
-                            "groundingMetadata": {
-                                "webSearchQueries": [
-                                    "Indonesia software engineer jobs"
-                                ],
-                                "groundingChunks": [
-                                    {
-                                        "web": {
-                                            "title": "Official source",
-                                            "uri": "https://example.go.id/report",
-                                        }
-                                    }
-                                ],
-                            },
-                        }
-                    ]
-                },
+                ]
             )
+        )
 
         with (
-            patch.object(settings, "gemini_api_key", "test-key"),
-            patch.object(settings, "gemini_model", "test-model"),
+            patch.object(settings, "nvidia_api_key", "test-key"),
+            patch.object(settings, "nvidia_model", "test-model"),
+            self.assertRaises(AIProviderResponseError),
         ):
-            async with httpx.AsyncClient(
-                transport=httpx.MockTransport(handler)
-            ) as client:
-                result = await GeminiProvider(client).generate_grounded_structured(
-                    response_type=MarketBaselineAIResult,
-                    system_instruction="Research",
-                    input_data={"country": "Indonesia"},
-                )
-        self.assertEqual(result.value.signals[0].classification, "strong")
-        self.assertEqual(result.citations[0]["url"], "https://example.go.id/report")
-
-    async def test_grounded_response_without_citations_is_rejected(self) -> None:
-        output = {
-            "summary": "Ringkasan.",
-            "signals": [
-                {
-                    "subject_type": "skill",
-                    "subject_name": "Python",
-                    "signal_type": "skill_relevance",
-                    "classification": "rising",
-                    "rationale": "Relevan.",
-                }
-            ],
-        }
-
-        def handler(_: httpx.Request) -> httpx.Response:
-            return httpx.Response(
-                200,
-                json={
-                    "candidates": [
-                        {
-                            "finishReason": "STOP",
-                            "content": {"parts": [{"text": json.dumps(output)}]},
-                            "groundingMetadata": {},
-                        }
-                    ]
-                },
+            await NvidiaNIMProvider(client).generate_structured(
+                response_type=EvidenceAssistantDraft,
+                system_instruction="Test",
+                input_data={},
             )
 
+    async def test_grounded_generation_is_explicitly_unavailable(self) -> None:
         with (
-            patch.object(settings, "gemini_api_key", "test-key"),
-            patch.object(settings, "gemini_model", "test-model"),
+            patch.object(settings, "nvidia_api_key", "test-key"),
+            patch.object(settings, "nvidia_model", "test-model"),
+            self.assertRaises(AIProviderUnavailable),
         ):
-            async with httpx.AsyncClient(
-                transport=httpx.MockTransport(handler)
-            ) as client:
-                with self.assertRaises(AIProviderResponseError):
-                    await GeminiProvider(client).generate_grounded_structured(
-                        response_type=MarketBaselineAIResult,
-                        system_instruction="Research",
-                        input_data={},
-                    )
+            await NvidiaNIMProvider(MagicMock()).generate_grounded_structured(
+                response_type=MarketBaselineAIResult,
+                system_instruction="Research",
+                input_data={"country": "Indonesia"},
+            )
 
 
 class MarketBaselineSchemaTests(TestCase):
