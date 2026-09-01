@@ -92,8 +92,9 @@ Use the user's supplied facts as the source of truth. General labor-market knowl
 inform qualitative classifications, but do not invent statistics, employers, credentials,
 achievements, dates, or skills. Keep explanations concise and in Indonesian.
 
-Activities must reflect the supplied responsibilities. Skills must preserve supplied skill
-names. performance_growth assesses documented outcomes and progression; adaptability
+Activities must reflect the supplied responsibilities. Return exactly one skill entry for every
+supplied skill, preserve each supplied skill name verbatim, and never add inferred skills.
+performance_growth assesses documented outcomes and progression; adaptability
 assesses breadth, learning, and handling change. market_demand means demand for the current
 role (strong is favorable). industry_stability means stability of the industry (strong is
 favorable). skill_dependency means concentration risk (strong means high dependency/risk).
@@ -367,7 +368,7 @@ async def _create_bundle(
         financial_readiness_score=financial_score,
     )
     provenance = {
-        "provider": "nvidia_nim",
+        "provider": "groq",
         "model": provider_model,
         "prompt_version": PROMPT_VERSION,
         "scoring_version": SCORE_VERSION,

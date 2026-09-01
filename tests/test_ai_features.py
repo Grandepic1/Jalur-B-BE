@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from app.core.ai import (
     AIProviderResponseError,
     AIProviderUnavailable,
-    NvidiaNIMProvider,
+    GroqProvider,
 )
 from app.core.config import settings
 from app.core.scoring import (
@@ -96,7 +96,7 @@ class AiRouteContractTests(TestCase):
             self.assertEqual(set(paths[path]), methods)
 
 
-class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
+class GroqProviderTests(IsolatedAsyncioTestCase):
     async def test_structured_response_is_validated(self) -> None:
         client = MagicMock()
         client.chat.completions.create = AsyncMock(
@@ -119,10 +119,10 @@ class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
         )
 
         with (
-            patch.object(settings, "nvidia_api_key", "test-key"),
-            patch.object(settings, "nvidia_model", "test-model"),
+            patch.object(settings, "groq_api_key", "test-key"),
+            patch.object(settings, "groq_model", "test-model"),
         ):
-            result = await NvidiaNIMProvider(client).generate_structured(
+            result = await GroqProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={"story": "test"},
@@ -130,14 +130,16 @@ class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
         self.assertEqual(result.title, "Migrasi platform")
         request = client.chat.completions.create.await_args.kwargs
         self.assertEqual(request["model"], "test-model")
-        self.assertEqual(request["temperature"], 1)
-        self.assertEqual(request["top_p"], 0.95)
-        self.assertEqual(request["max_tokens"], settings.nvidia_max_tokens)
+        self.assertEqual(request["temperature"], 0.2)
+        self.assertEqual(request["max_tokens"], settings.groq_max_tokens)
+        self.assertEqual(request["reasoning_effort"], "low")
         self.assertEqual(request["seed"], 42)
-        self.assertEqual(
-            request["extra_body"],
-            {"chat_template_kwargs": {"thinking": False}},
-        )
+        response_format = request["response_format"]
+        self.assertEqual(response_format["type"], "json_schema")
+        self.assertTrue(response_format["json_schema"]["strict"])
+        schema = response_format["json_schema"]["schema"]
+        self.assertEqual(schema["required"], ["title", "description", "impact"])
+        self.assertFalse(schema["additionalProperties"])
 
     async def test_invalid_json_is_rejected(self) -> None:
         client = MagicMock()
@@ -153,11 +155,11 @@ class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
         )
 
         with (
-            patch.object(settings, "nvidia_api_key", "test-key"),
-            patch.object(settings, "nvidia_model", "test-model"),
+            patch.object(settings, "groq_api_key", "test-key"),
+            patch.object(settings, "groq_model", "test-model"),
             self.assertRaises(AIProviderResponseError),
         ):
-            await NvidiaNIMProvider(client).generate_structured(
+            await GroqProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={},
@@ -165,11 +167,11 @@ class NvidiaNIMProviderTests(IsolatedAsyncioTestCase):
 
     async def test_grounded_generation_is_explicitly_unavailable(self) -> None:
         with (
-            patch.object(settings, "nvidia_api_key", "test-key"),
-            patch.object(settings, "nvidia_model", "test-model"),
+            patch.object(settings, "groq_api_key", "test-key"),
+            patch.object(settings, "groq_model", "test-model"),
             self.assertRaises(AIProviderUnavailable),
         ):
-            await NvidiaNIMProvider(MagicMock()).generate_grounded_structured(
+            await GroqProvider(MagicMock()).generate_grounded_structured(
                 response_type=MarketBaselineAIResult,
                 system_instruction="Research",
                 input_data={"country": "Indonesia"},
