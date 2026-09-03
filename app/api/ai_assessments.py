@@ -91,6 +91,9 @@ Classify signals only into the enums in the schema; never assign numeric scores.
 Use the user's supplied facts as the source of truth. General labor-market knowledge may
 inform qualitative classifications, but do not invent statistics, employers, credentials,
 achievements, dates, or skills. Keep explanations concise and in Indonesian.
+Never use placeholder text such as a period, dash, "N/A", or an empty-looking answer.
+Each reason, activity note, and recommendation must be at least one complete, specific sentence.
+Each summary and analysis must contain two to four complete sentences grounded in supplied facts.
 
 Activities must reflect the supplied responsibilities. Return exactly one skill entry for every
 supplied skill, preserve each supplied skill name verbatim, and never add inferred skills.

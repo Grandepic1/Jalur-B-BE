@@ -19,7 +19,7 @@ from app.core.scoring import (
     risk_level,
     weighted,
 )
-from app.models.ai_features import EvidenceAssistantDraft
+from app.models.ai_features import CareerAnalysisAIResult, EvidenceAssistantDraft
 from app.models.market_baseline import (
     MarketBaselineAIResult,
     MarketBaselineRefreshRequest,
@@ -97,6 +97,15 @@ class AiRouteContractTests(TestCase):
 
 
 class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
+    def test_career_analysis_requires_substantive_text(self) -> None:
+        schema = CareerAnalysisAIResult.model_json_schema()
+
+        self.assertEqual(schema["properties"]["health_summary"]["minLength"], 80)
+        self.assertEqual(
+            schema["$defs"]["SignalResult"]["properties"]["reason"]["minLength"],
+            40,
+        )
+
     async def test_structured_response_is_validated(self) -> None:
         client = MagicMock()
         client.responses.create = AsyncMock(

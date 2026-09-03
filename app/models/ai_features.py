@@ -28,7 +28,7 @@ class RelevanceBand(str, PyEnum):
 
 class SignalResult(BaseModel):
     level: SignalLevel
-    reason: str = Field(..., min_length=1, max_length=500)
+    reason: str = Field(..., min_length=40, max_length=500)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -36,7 +36,7 @@ class SignalResult(BaseModel):
 class ActivityResult(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     exposure: ExposureBand
-    note: str = Field(..., min_length=1, max_length=1000)
+    note: str = Field(..., min_length=40, max_length=1000)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -44,7 +44,7 @@ class ActivityResult(BaseModel):
 class SkillResult(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     relevance: RelevanceBand
-    recommendation: str = Field(..., min_length=1, max_length=500)
+    recommendation: str = Field(..., min_length=40, max_length=500)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -56,7 +56,7 @@ class PivotRoleResult(BaseModel):
     experience_fit: SignalLevel
     industry_fit: SignalLevel
     missing_skills: list[str] = Field(default_factory=list, max_length=5)
-    reason: str = Field(..., min_length=1, max_length=1000)
+    reason: str = Field(..., min_length=40, max_length=1000)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -77,12 +77,12 @@ class CareerAnalysisAIResult(BaseModel):
     industry_stability: SignalResult
     skill_dependency: SignalResult
     pivot_roles: list[PivotRoleResult] = Field(..., min_length=1, max_length=3)
-    exposure_summary: str = Field(..., min_length=1, max_length=2000)
-    risk_summary: str = Field(..., min_length=1, max_length=2000)
-    risk_analysis: str = Field(..., min_length=1, max_length=2000)
-    early_warning: str = Field(..., min_length=1, max_length=1000)
-    health_summary: str = Field(..., min_length=1, max_length=2000)
-    pivot_summary: str = Field(..., min_length=1, max_length=2000)
+    exposure_summary: str = Field(..., min_length=80, max_length=2000)
+    risk_summary: str = Field(..., min_length=80, max_length=2000)
+    risk_analysis: str = Field(..., min_length=80, max_length=2000)
+    early_warning: str = Field(..., min_length=40, max_length=1000)
+    health_summary: str = Field(..., min_length=80, max_length=2000)
+    pivot_summary: str = Field(..., min_length=80, max_length=2000)
 
     model_config = ConfigDict(extra="forbid")
 
