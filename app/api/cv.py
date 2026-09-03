@@ -228,8 +228,12 @@ async def preview_cv(
     db: AsyncSession = Depends(get_db),
     provider: StructuredAIProvider = Depends(get_ai_provider),
 ) -> CVPreviewResponse:
+    # db.rollback() below expires every ORM attribute on the session-bound user;
+    # snapshot the id first so later reads never trigger a lazy reload outside
+    # the async greenlet (sqlalchemy.exc.MissingGreenlet).
+    user_id = user.id
     if (
-        await db.scalar(select(UserProfile.id).where(UserProfile.user_id == user.id))
+        await db.scalar(select(UserProfile.id).where(UserProfile.user_id == user_id))
         is None
     ):
         raise HTTPException(
@@ -238,7 +242,7 @@ async def preview_cv(
         )
     await db.rollback()
 
-    await _reserve_cv_processing(user.id)
+    await _reserve_cv_processing(user_id)
     try:
         content, safe_name, content_type, _ = await _read_cv_upload(file)
         try:
@@ -259,12 +263,12 @@ async def preview_cv(
         except AIProviderError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from None
     finally:
-        await _release_cv_processing(user.id)
+        await _release_cv_processing(user_id)
 
     expires_at = datetime.now(UTC) + CV_PREVIEW_LIFETIME
     token_data = CVPreviewTokenData(
         preview_id=uuid4(),
-        user_id=user.id,
+        user_id=user_id,
         expires_at=expires_at,
         model=provider.model,
     )
@@ -288,8 +292,12 @@ async def confirm_cv(
     user: User = Depends(get_verified_user),
     db: AsyncSession = Depends(get_db),
 ) -> CVConfirmResponse:
+    # db.rollback()/db.commit() below expire every ORM attribute on the
+    # session-bound user; snapshot the id first so later reads never trigger a
+    # lazy reload outside the async greenlet (sqlalchemy.exc.MissingGreenlet).
+    user_id = user.id
     preview = _decode_preview_token(payload.preview_token)
-    if preview.user_id != user.id:
+    if preview.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="CV preview not found"
         )
@@ -297,24 +305,24 @@ async def confirm_cv(
     # Fast path: this preview already produced the current confirmed CV.
     receipt = await db.scalar(
         select(CVConfirmationReceipt).where(
-            CVConfirmationReceipt.user_id == user.id,
+            CVConfirmationReceipt.user_id == user_id,
             CVConfirmationReceipt.preview_id == preview.preview_id,
         )
     )
     if receipt is not None:
-        cv = await db.scalar(select(UserCV).where(UserCV.user_id == user.id))
+        cv = await db.scalar(select(UserCV).where(UserCV.user_id == user_id))
         if cv is None or cv.source_preview_id != preview.preview_id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="CV preview was already confirmed and superseded",
             )
-        return await _confirmed_response(db, user.id, cv)
+        return await _confirmed_response(db, user_id, cv)
     await db.rollback()
 
     previous_path: str | None = None
     try:
         locked_user_id = await db.scalar(
-            select(User.id).where(User.id == user.id).with_for_update()
+            select(User.id).where(User.id == user_id).with_for_update()
         )
         if locked_user_id is None:
             raise HTTPException(
@@ -325,23 +333,26 @@ async def confirm_cv(
         # return the already-applied result instead of applying it twice.
         receipt = await db.scalar(
             select(CVConfirmationReceipt).where(
-                CVConfirmationReceipt.user_id == user.id,
+                CVConfirmationReceipt.user_id == user_id,
                 CVConfirmationReceipt.preview_id == preview.preview_id,
             )
         )
         if receipt is not None:
-            cv = await db.scalar(select(UserCV).where(UserCV.user_id == user.id))
+            await db.rollback()
+            # Reload after the rollback: the previous cv instance was expired by
+            # it, and reading its attributes would lazy-load outside the async
+            # greenlet (sqlalchemy.exc.MissingGreenlet).
+            cv = await db.scalar(select(UserCV).where(UserCV.user_id == user_id))
             if cv is None or cv.source_preview_id != preview.preview_id:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="CV preview was already confirmed and superseded",
                 )
-            await db.rollback()
-            return await _confirmed_response(db, user.id, cv)
+            return await _confirmed_response(db, user_id, cv)
 
         profile = await db.scalar(
             select(UserProfile)
-            .where(UserProfile.user_id == user.id)
+            .where(UserProfile.user_id == user_id)
             .with_for_update()
         )
         if profile is None:
@@ -376,14 +387,14 @@ async def confirm_cv(
                     insert(UserSkill)
                     .values(
                         [
-                            {"user_id": user.id, "skill_id": skill.id}
+                            {"user_id": user_id, "skill_id": skill.id}
                             for skill in submitted_skills
                         ]
                     )
                     .on_conflict_do_nothing(constraint="uq_user_skill")
                 )
 
-        cv = await db.scalar(select(UserCV).where(UserCV.user_id == user.id))
+        cv = await db.scalar(select(UserCV).where(UserCV.user_id == user_id))
         previous_path = cv.storage_object_path if cv is not None else None
         values = {
             # Confirmed CVs no longer retain the source file.
@@ -399,14 +410,14 @@ async def confirm_cv(
             "uploaded_at": datetime.now(UTC),
         }
         if cv is None:
-            cv = UserCV(user_id=user.id, **values)
+            cv = UserCV(user_id=user_id, **values)
             db.add(cv)
         else:
             for field, value in values.items():
                 setattr(cv, field, value)
         db.add(
             CVConfirmationReceipt(
-                user_id=user.id,
+                user_id=user_id,
                 preview_id=preview.preview_id,
             )
         )
@@ -416,6 +427,11 @@ async def confirm_cv(
         await db.refresh(cv)
         await db.refresh(profile)
         await db.commit()
+        # Commit expired every loaded instance; reload before building the
+        # response so attribute reads do not lazy-load outside the async
+        # greenlet.
+        await db.refresh(cv)
+        await db.refresh(profile)
     except Exception:
         await db.rollback()
         raise
@@ -425,4 +441,4 @@ async def confirm_cv(
             await process_storage_deletion_path(db, previous_path)
         except Exception:
             logger.exception("Could not immediately process replaced CV cleanup")
-    return await _confirmed_response(db, user.id, cv, profile)
+    return await _confirmed_response(db, user_id, cv, profile)

@@ -138,13 +138,17 @@ async def get_weekly_insight(
         prompt_version=PROMPT_VERSION,
     )
     db.add(item)
+    # Snapshot before commit: on IntegrityError the rollback below expires the
+    # session-bound user, so reading user.id would lazy-load outside the async
+    # greenlet (sqlalchemy.exc.MissingGreenlet).
+    user_id = user.id
     try:
         await db.commit()
     except IntegrityError:
         await db.rollback()
         winner = await db.scalar(
             select(WeeklyCareerInsight).where(
-                WeeklyCareerInsight.user_id == user.id,
+                WeeklyCareerInsight.user_id == user_id,
                 WeeklyCareerInsight.week_start == week_start,
             )
         )
