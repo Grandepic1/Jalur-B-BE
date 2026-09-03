@@ -592,7 +592,11 @@ async def delete_account(
             detail="Current password is invalid",
         )
     cv = await db.scalar(select(UserCV).where(UserCV.user_id == locked_user.id))
-    cv_paths = {cv.storage_object_path} if cv is not None else set()
+    cv_paths = (
+        {cv.storage_object_path}
+        if cv is not None and cv.storage_object_path is not None
+        else set()
+    )
     for cv_path in cv_paths:
         await enqueue_storage_deletion(db, cv_path)
     await db.delete(locked_user)

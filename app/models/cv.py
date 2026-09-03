@@ -28,10 +28,12 @@ class UserCV(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), unique=True
     )
-    file_name: Mapped[str] = mapped_column(String(255))
-    file_size: Mapped[int] = mapped_column(Integer)
-    content_type: Mapped[str] = mapped_column(String(100))
-    storage_object_path: Mapped[str] = mapped_column(String(500))
+    # Legacy file columns are nullable and no longer populated: confirmed CVs do not
+    # retain the source file, only the reviewed extracted data.
+    file_name: Mapped[str | None] = mapped_column(String(255))
+    file_size: Mapped[int | None] = mapped_column(Integer)
+    content_type: Mapped[str | None] = mapped_column(String(100))
+    storage_object_path: Mapped[str | None] = mapped_column(String(500))
     source_preview_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), unique=True
     )
@@ -104,6 +106,20 @@ class CVExperience(BaseModel):
         return normalized or None
 
 
+def _normalize_skills(values: list[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        skill = " ".join(value.split())
+        if len(skill) > 100:
+            raise ValueError("skill names must not exceed 100 characters")
+        key = skill.lower()
+        if skill and key not in seen:
+            normalized.append(skill)
+            seen.add(key)
+    return normalized
+
+
 class CVExtractionAIResult(BaseModel):
     profile: CVProfileExtraction
     skills: list[CVSkill] = Field(..., max_length=20)
@@ -114,23 +130,10 @@ class CVExtractionAIResult(BaseModel):
     @field_validator("skills")
     @classmethod
     def normalize_skills(cls, values: list[str]) -> list[str]:
-        normalized: list[str] = []
-        seen: set[str] = set()
-        for value in values:
-            skill = " ".join(value.split())
-            if len(skill) > 100:
-                raise ValueError("skill names must not exceed 100 characters")
-            key = skill.lower()
-            if skill and key not in seen:
-                normalized.append(skill)
-                seen.add(key)
-        return normalized
+        return _normalize_skills(values)
 
 
 class CVResponse(BaseModel):
-    file_name: str
-    file_size: int
-    content_type: str
     uploaded_at: datetime
     experiences: list[CVExperience] = Field(..., max_length=12)
     model: str
@@ -152,17 +155,30 @@ class CVPreviewResponse(BaseModel):
 class CVPreviewTokenData(BaseModel):
     preview_id: UUID
     user_id: int
-    file_name: str = Field(..., max_length=255)
-    file_size: int = Field(..., ge=1)
-    content_type: str
-    file_sha256: str = Field(..., min_length=64, max_length=64)
     expires_at: datetime
-    profile: CVProfileExtraction
-    skills: list[CVSkill] = Field(..., max_length=20)
-    experiences: list[CVExperience] = Field(..., max_length=12)
     model: str = Field(..., max_length=100)
 
     model_config = ConfigDict(extra="forbid")
+
+
+class CVConfirmRequest(BaseModel):
+    """User-reviewed values sent after editing the preview draft.
+
+    These values replace the AI extraction: the confirmed profile fields, skills, and
+    career history are whatever the authenticated user reviewed and edited.
+    """
+
+    preview_token: str = Field(..., min_length=1)
+    profile: CVProfileExtraction
+    skills: list[CVSkill] = Field(..., max_length=20)
+    experiences: list[CVExperience] = Field(..., max_length=12)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("skills")
+    @classmethod
+    def normalize_skills(cls, values: list[str]) -> list[str]:
+        return _normalize_skills(values)
 
 
 class CVConfirmResponse(BaseModel):

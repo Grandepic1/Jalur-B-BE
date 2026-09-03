@@ -149,9 +149,10 @@ CV extraction is a two-step review flow. Both write endpoints require a verified
 with an existing profile:
 
 1. Send a PDF or DOCX as multipart field `file` to `POST /api/profile/cv/preview`.
-2. Display the returned `profile`, `skills`, and `experiences` to the user.
-3. After user confirmation, resend the same file and returned token to
-   `POST /api/profile/cv/confirm` as multipart fields `file` and `preview_token`.
+2. Display the returned `profile`, `skills`, and `experiences` to the user for review
+   and editing.
+3. Send the reviewed values back to `POST /api/profile/cv/confirm` as a JSON body:
+   `{"preview_token": "...", "profile": {...}, "skills": [...], "experiences": [...]}`.
 
 The preview response has this shape:
 
@@ -178,15 +179,18 @@ The preview response has this shape:
 
 Previewing does not change the profile, skills, career history, or current confirmed CV.
 The backend does not retain an unconfirmed file or database draft; the signed preview token
-expires after one hour and is bound to the authenticated user, exact filename, and file
-contents.
-Confirmation atomically updates non-null extracted profile fields, merges extracted skills
-without removing existing skills, and saves extracted experiences as the CV career history.
-The confirmation endpoint is idempotent when retried with the same token and file.
-Consumed previews cannot overwrite a newer confirmed CV. Replaced CV objects and files from
-deleted accounts are removed through a durable retryable storage-cleanup queue.
+expires after one hour and is bound to the authenticated user.
+Confirmation is importer-only: the reviewed values sent by the frontend replace the AI
+extraction. It atomically updates non-null edited profile fields, merges edited skills
+without removing existing skills, and saves the edited experiences as the CV career
+history. Blank profile fields keep the user's existing values. The source CV file is not
+stored on the account.
+The confirmation endpoint is idempotent when retried with the same token.
+Consumed previews cannot overwrite a newer confirmed CV. Files left behind by legacy
+stored CVs and replaced CV objects from deleted accounts are removed through a durable
+retryable storage-cleanup queue.
 
-- `GET /api/profile/cv` returns the confirmed CV and career history.
+- `GET /api/profile/cv` returns the confirmed CV career history and the model used.
 - PDF and DOCX are supported up to 5 MB; scanned PDFs without readable text are rejected.
 - CV text is sent to the configured Contributor Free model and may be used for model
   training. The frontend must disclose this before upload.

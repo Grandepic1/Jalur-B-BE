@@ -119,7 +119,8 @@ evidence/performance context, and financial data. It is not prediction accuracy.
 - `POST /api/profile/cv/preview` extracts PDF or DOCX text locally, then returns a
   reviewable profile, skill, and career-history draft without changing account data.
 - `POST /api/profile/cv/confirm` atomically applies the reviewed non-null profile fields,
-  merges skills, and promotes the extracted career history and private CV file.
+  merges skills, and saves the reviewed career history. The frontend sends the
+  user-edited values; the source CV file is not retained.
 - Evidence `impact` is optional for both human and AI-assisted entries.
 
 Assessment snapshots store the model, prompt version, scoring version, and factual input
