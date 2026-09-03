@@ -74,12 +74,12 @@ class StructuredAIProvider(Protocol):
     ) -> GroundedResult[T]: ...
 
 
-class GroqProvider:
+class OpenCodeZenProvider:
     def __init__(self, client: AsyncOpenAI) -> None:
-        if not settings.groq_configured:
-            raise AIProviderUnavailable("Groq is not configured")
+        if not settings.opencode_zen_configured:
+            raise AIProviderUnavailable("OpenCode Zen is not configured")
         self.client = client
-        self.model = settings.groq_model
+        self.model = settings.opencode_zen_model
 
     async def generate_structured(
         self,
@@ -102,7 +102,7 @@ class GroqProvider:
         input_data: dict[str, object],
     ) -> GroundedResult[T]:
         raise AIProviderUnavailable(
-            "Groq structured generation does not provide grounded web search citations"
+            "OpenCode Zen Muse does not provide grounded web search citations"
         )
 
     async def _generate(
@@ -119,59 +119,64 @@ class GroqProvider:
         )
         response_schema = _strict_json_schema(response_type.model_json_schema())
         try:
-            completion = await self.client.chat.completions.create(
+            response = await self.client.responses.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": prompt},
-                ],
+                instructions=system_instruction,
+                input=prompt,
                 temperature=0.2,
-                max_tokens=settings.groq_max_tokens,
-                reasoning_effort="low",
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {
+                max_output_tokens=settings.opencode_zen_max_output_tokens,
+                text={
+                    "format": {
+                        "type": "json_schema",
                         "name": response_type.__name__,
                         "strict": True,
                         "schema": response_schema,
-                    },
+                    }
                 },
-                seed=42,
+                store=False,
                 stream=False,
             )
         except RateLimitError as exc:
-            raise AIProviderUnavailable("Groq rate limit exceeded; retry later") from exc
+            raise AIProviderUnavailable(
+                "OpenCode Zen rate limit exceeded; retry later"
+            ) from exc
         except APITimeoutError as exc:
-            raise AIProviderUnavailable("Groq request timed out") from exc
+            raise AIProviderUnavailable("OpenCode Zen request timed out") from exc
         except (APIConnectionError, InternalServerError) as exc:
-            raise AIProviderUnavailable("Groq is temporarily unavailable") from exc
+            raise AIProviderUnavailable(
+                "OpenCode Zen is temporarily unavailable"
+            ) from exc
         except APIError as exc:
-            raise AIProviderResponseError("Groq rejected the generation request") from exc
-        try:
-            choice = completion.choices[0]
-            if choice.finish_reason not in (None, "stop"):
-                raise AIProviderResponseError(
-                    "Groq did not complete the response"
-                )
-            if not choice.message.content:
-                raise AIProviderResponseError("Groq returned an empty response")
-            return response_type.model_validate_json(choice.message.content)
-        except (IndexError, TypeError, ValueError, ValidationError) as exc:
             raise AIProviderResponseError(
-                "Groq returned an invalid structured response"
+                "OpenCode Zen rejected the generation request"
+            ) from exc
+        try:
+            if response.status != "completed":
+                details = getattr(response, "incomplete_details", None)
+                reason = getattr(details, "reason", None)
+                suffix = f": {reason}" if reason else ""
+                raise AIProviderResponseError(
+                    f"OpenCode Zen did not complete the response{suffix}"
+                )
+            if not response.output_text:
+                raise AIProviderResponseError("OpenCode Zen returned an empty response")
+            return response_type.model_validate_json(response.output_text)
+        except (TypeError, ValueError, ValidationError) as exc:
+            raise AIProviderResponseError(
+                "OpenCode Zen returned an invalid structured response"
             ) from exc
 
 
 async def get_ai_provider() -> AsyncGenerator[StructuredAIProvider, None]:
-    if not settings.groq_configured:
+    if not settings.opencode_zen_configured:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Groq is not configured",
+            detail="OpenCode Zen is not configured",
         )
     async with AsyncOpenAI(
-        base_url=settings.groq_base_url,
-        api_key=settings.groq_api_key,
-        timeout=settings.groq_timeout_seconds,
+        base_url=settings.opencode_zen_base_url,
+        api_key=settings.opencode_zen_api_key,
+        timeout=settings.opencode_zen_timeout_seconds,
         max_retries=0,
     ) as client:
-        yield GroqProvider(client)
+        yield OpenCodeZenProvider(client)

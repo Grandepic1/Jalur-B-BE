@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from app.core.ai import (
     AIProviderResponseError,
     AIProviderUnavailable,
-    GroqProvider,
+    OpenCodeZenProvider,
 )
 from app.core.config import settings
 from app.core.scoring import (
@@ -96,70 +96,81 @@ class AiRouteContractTests(TestCase):
             self.assertEqual(set(paths[path]), methods)
 
 
-class GroqProviderTests(IsolatedAsyncioTestCase):
+class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
     async def test_structured_response_is_validated(self) -> None:
         client = MagicMock()
-        client.chat.completions.create = AsyncMock(
+        client.responses.create = AsyncMock(
             return_value=SimpleNamespace(
-                choices=[
-                    SimpleNamespace(
-                        finish_reason="stop",
-                        message=SimpleNamespace(
-                            content=json.dumps(
-                                {
-                                    "title": "Migrasi platform",
-                                    "description": "Memigrasikan platform.",
-                                    "impact": "Dampak belum disebutkan.",
-                                }
-                            )
-                        ),
-                    )
-                ]
+                status="completed",
+                output_text=json.dumps(
+                    {
+                        "title": "Migrasi platform",
+                        "description": "Memigrasikan platform.",
+                        "impact": "Dampak belum disebutkan.",
+                    }
+                ),
             )
         )
 
         with (
-            patch.object(settings, "groq_api_key", "test-key"),
-            patch.object(settings, "groq_model", "test-model"),
+            patch.object(settings, "opencode_zen_api_key", "test-key"),
+            patch.object(settings, "opencode_zen_model", "test-model"),
         ):
-            result = await GroqProvider(client).generate_structured(
+            result = await OpenCodeZenProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={"story": "test"},
             )
         self.assertEqual(result.title, "Migrasi platform")
-        request = client.chat.completions.create.await_args.kwargs
+        request = client.responses.create.await_args.kwargs
         self.assertEqual(request["model"], "test-model")
         self.assertEqual(request["temperature"], 0.2)
-        self.assertEqual(request["max_tokens"], settings.groq_max_tokens)
-        self.assertEqual(request["reasoning_effort"], "low")
-        self.assertEqual(request["seed"], 42)
-        response_format = request["response_format"]
+        self.assertEqual(
+            request["max_output_tokens"], settings.opencode_zen_max_output_tokens
+        )
+        response_format = request["text"]["format"]
         self.assertEqual(response_format["type"], "json_schema")
-        self.assertTrue(response_format["json_schema"]["strict"])
-        schema = response_format["json_schema"]["schema"]
+        self.assertTrue(response_format["strict"])
+        schema = response_format["schema"]
         self.assertEqual(schema["required"], ["title", "description", "impact"])
         self.assertFalse(schema["additionalProperties"])
 
     async def test_invalid_json_is_rejected(self) -> None:
         client = MagicMock()
-        client.chat.completions.create = AsyncMock(
+        client.responses.create = AsyncMock(
             return_value=SimpleNamespace(
-                choices=[
-                    SimpleNamespace(
-                        finish_reason="stop",
-                        message=SimpleNamespace(content="not json"),
-                    )
-                ]
+                status="completed",
+                output_text="not json",
             )
         )
 
         with (
-            patch.object(settings, "groq_api_key", "test-key"),
-            patch.object(settings, "groq_model", "test-model"),
+            patch.object(settings, "opencode_zen_api_key", "test-key"),
+            patch.object(settings, "opencode_zen_model", "test-model"),
             self.assertRaises(AIProviderResponseError),
         ):
-            await GroqProvider(client).generate_structured(
+            await OpenCodeZenProvider(client).generate_structured(
+                response_type=EvidenceAssistantDraft,
+                system_instruction="Test",
+                input_data={},
+            )
+
+    async def test_incomplete_response_reports_reason(self) -> None:
+        client = MagicMock()
+        client.responses.create = AsyncMock(
+            return_value=SimpleNamespace(
+                status="incomplete",
+                incomplete_details=SimpleNamespace(reason="max_output_tokens"),
+                output_text="",
+            )
+        )
+
+        with (
+            patch.object(settings, "opencode_zen_api_key", "test-key"),
+            patch.object(settings, "opencode_zen_model", "test-model"),
+            self.assertRaisesRegex(AIProviderResponseError, "max_output_tokens"),
+        ):
+            await OpenCodeZenProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={},
@@ -167,11 +178,11 @@ class GroqProviderTests(IsolatedAsyncioTestCase):
 
     async def test_grounded_generation_is_explicitly_unavailable(self) -> None:
         with (
-            patch.object(settings, "groq_api_key", "test-key"),
-            patch.object(settings, "groq_model", "test-model"),
+            patch.object(settings, "opencode_zen_api_key", "test-key"),
+            patch.object(settings, "opencode_zen_model", "test-model"),
             self.assertRaises(AIProviderUnavailable),
         ):
-            await GroqProvider(MagicMock()).generate_grounded_structured(
+            await OpenCodeZenProvider(MagicMock()).generate_grounded_structured(
                 response_type=MarketBaselineAIResult,
                 system_instruction="Research",
                 input_data={"country": "Indonesia"},

@@ -1,18 +1,20 @@
 # AI and scoring
 
-Jalur B uses GPT-OSS through Groq for bounded classification and Indonesian
+Jalur B uses Muse Spark 1.2 Contributor Free through OpenCode Zen for bounded
+classification and Indonesian
 explanations. Numeric scores are calculated by backend code under `career-resilience-v1`;
 the model never supplies final numeric scores.
 
 ## Provider
 
-- Provider: Groq through its OpenAI-compatible API
-- Default model: `openai/gpt-oss-120b`
-- Responses use Groq strict JSON Schema mode and are validated again with Pydantic.
+- Provider: OpenCode Zen through its OpenAI Responses-compatible API
+- Default model: `muse-spark-1.2-contributor-free`
+- Responses use JSON Schema mode and are validated again with Pydantic.
+- Contributor Free prompts and completions may be used to train future Meta models.
 - Prompt version: `career-analysis-v1`
 - Provider failures do not create partial assessment snapshots.
 
-Model knowledge is not a substitute for sourced live market data. Groq structured completions
+Model knowledge is not a substitute for sourced live market data. Muse structured completions
 do not provide grounded web-search citations, so market-baseline refresh returns an explicit
 unavailable response rather than creating unsourced drafts. Existing approved baselines remain
 usable. Assessments prefer matching signals from the current approved
@@ -24,7 +26,7 @@ estimates and do not claim grounding.
 - Set `MARKET_BASELINE_ADMIN_KEY` to protect management operations. Management calls also
   require a verified user access token so the creator and approver are auditable.
 - `POST /api/market-baselines/refresh` requires a provider with grounded web-search citations.
-  It is unavailable with the current Groq provider, which prevents fabricated sources.
+  It is unavailable with the current OpenCode Zen provider, which prevents fabricated sources.
 - Review drafts with `GET /api/market-baselines?status=draft` and their citations.
 - Approve with `POST /api/market-baselines/{id}/approve`, or reject with
   `POST /api/market-baselines/{id}/reject`. Approving archives the previous baseline and never

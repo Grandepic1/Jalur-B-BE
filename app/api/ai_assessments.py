@@ -368,7 +368,7 @@ async def _create_bundle(
         financial_readiness_score=financial_score,
     )
     provenance = {
-        "provider": "groq",
+        "provider": "opencode_zen",
         "model": provider_model,
         "prompt_version": PROMPT_VERSION,
         "scoring_version": SCORE_VERSION,
