@@ -7,10 +7,10 @@ from botocore.config import Config
 from app.core.config import settings
 
 
-class EvidenceStorage:
+class PrivateStorage:
     def __init__(self) -> None:
         if not settings.evidence_storage_configured:
-            raise RuntimeError("Evidence attachment storage is not configured")
+            raise RuntimeError("Private storage is not configured")
         self.bucket = settings.supabase_storage_bucket
         self.client: BaseClient = boto3.client(
             "s3",
@@ -44,5 +44,9 @@ class EvidenceStorage:
 
 
 @lru_cache
-def get_evidence_storage() -> EvidenceStorage:
-    return EvidenceStorage()
+def get_private_storage() -> PrivateStorage:
+    return PrivateStorage()
+
+
+def get_evidence_storage() -> PrivateStorage:
+    return get_private_storage()

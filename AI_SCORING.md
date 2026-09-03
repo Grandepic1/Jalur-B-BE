@@ -116,6 +116,10 @@ evidence/performance context, and financial data. It is not prediction accuracy.
 - `POST /api/evidence/assistant/draft` generates a reviewable Evidence draft.
 - `POST /api/evidence/assistant` saves a reviewed AI-assisted Evidence item.
 - `GET /api/ai/insights` returns a weekly cached insight and server-prioritized action.
+- `POST /api/profile/cv/preview` extracts PDF or DOCX text locally, then returns a
+  reviewable profile, skill, and career-history draft without changing account data.
+- `POST /api/profile/cv/confirm` atomically applies the reviewed non-null profile fields,
+  merges skills, and promotes the extracted career history and private CV file.
 - Evidence `impact` is optional for both human and AI-assisted entries.
 
 Assessment snapshots store the model, prompt version, scoring version, and factual input
@@ -125,6 +129,8 @@ snapshot. Historical scores are not recalculated when formulas or models change.
 
 - Results are decision support, not employment predictions.
 - User-authored facts can be incomplete or inaccurate.
+- CV text sent to the Contributor Free model may be used for future Meta model training.
+- Scanned PDFs require OCR and are rejected by the current text-only CV extractor.
 - A signal is described as sourced only when its assessment includes a non-null approved
   `market_baseline_version`; unmatched subjects are explicitly model estimates.
 - The three layoff scenarios change timing and action due dates. They do not project savings

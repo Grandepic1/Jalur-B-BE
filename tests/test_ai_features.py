@@ -91,6 +91,9 @@ class AiRouteContractTests(TestCase):
             "/api/market-baselines/refresh": {"post"},
             "/api/market-baselines/{baseline_id}/approve": {"post"},
             "/api/market-baselines/{baseline_id}/reject": {"post"},
+            "/api/profile/cv": {"get"},
+            "/api/profile/cv/preview": {"post"},
+            "/api/profile/cv/confirm": {"post"},
         }
         for path, methods in expected.items():
             self.assertIn(path, paths)

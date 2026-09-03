@@ -143,6 +143,54 @@ Verified users who completed onboarding can use:
 - `PUT /api/profile/skills/{skill_id}` to add or replace proficiency data.
 - `DELETE /api/profile/skills/{skill_id}` to remove a skill from the profile.
 
+## CV Preview API
+
+CV extraction is a two-step review flow. Both write endpoints require a verified user
+with an existing profile:
+
+1. Send a PDF or DOCX as multipart field `file` to `POST /api/profile/cv/preview`.
+2. Display the returned `profile`, `skills`, and `experiences` to the user.
+3. After user confirmation, resend the same file and returned token to
+   `POST /api/profile/cv/confirm` as multipart fields `file` and `preview_token`.
+
+The preview response has this shape:
+
+```json
+{
+  "preview_id": "6956dcb6-1a73-4f86-8201-249a48d738cd",
+  "preview_token": "<signed one-hour token>",
+  "file_name": "resume.pdf",
+  "file_size": 123456,
+  "content_type": "application/pdf",
+  "expires_at": "2026-09-03T13:00:00Z",
+  "profile": {
+    "full_name": "Joan Orlando",
+    "current_role_name": "Backend Engineer",
+    "industry_name": "Technology",
+    "work_duration_months": 24,
+    "daily_activities": "Membangun dan menjaga API produksi."
+  },
+  "skills": ["Python", "API Design"],
+  "experiences": [],
+  "model": "muse-spark-1.2-contributor-free"
+}
+```
+
+Previewing does not change the profile, skills, career history, or current confirmed CV.
+The backend does not retain an unconfirmed file or database draft; the signed preview token
+expires after one hour and is bound to the authenticated user, exact filename, and file
+contents.
+Confirmation atomically updates non-null extracted profile fields, merges extracted skills
+without removing existing skills, and saves extracted experiences as the CV career history.
+The confirmation endpoint is idempotent when retried with the same token and file.
+Consumed previews cannot overwrite a newer confirmed CV. Replaced CV objects and files from
+deleted accounts are removed through a durable retryable storage-cleanup queue.
+
+- `GET /api/profile/cv` returns the confirmed CV and career history.
+- PDF and DOCX are supported up to 5 MB; scanned PDFs without readable text are rejected.
+- CV text is sent to the configured Contributor Free model and may be used for model
+  training. The frontend must disclose this before upload.
+
 Email and username are intentionally not editable through the profile endpoint because
 account identity changes require separate verification flows.
 

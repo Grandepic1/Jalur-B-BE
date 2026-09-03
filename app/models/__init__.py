@@ -4,6 +4,8 @@ from app.models.user import User
 from app.models.auth import AuthActionToken, OAuthLoginCode
 from app.models.profile import UserProfile
 from app.models.user_skills import UserSkill
+from app.models.cv import CVConfirmationReceipt, UserCV
+from app.models.storage import StorageDeletionJob
 
 # ── F1: Career Health Score ──────────────────────────────────────────
 from app.models.health import HealthAssessment, HealthScoreBreakdown
@@ -43,6 +45,9 @@ __all__ = [
     "OAuthLoginCode",
     "AuthActionToken",
     "UserProfile",
+    "UserCV",
+    "CVConfirmationReceipt",
+    "StorageDeletionJob",
     # Master data
     "Industry",
     "Role",

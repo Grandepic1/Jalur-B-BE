@@ -29,6 +29,7 @@ from app.core.security import (
     is_allowed_frontend_url,
     verify_password,
 )
+from app.core.storage_cleanup import enqueue_storage_deletion
 from app.models.auth import (
     AuthActionToken,
     AuthTokenPurpose,
@@ -45,6 +46,7 @@ from app.models.auth import (
     TokenActionRequest,
     UsernameUpdateRequest,
 )
+from app.models.cv import UserCV
 from app.models.profile import UserProfile
 from app.models.user import User, UserCreate, UserResponse
 
@@ -589,6 +591,10 @@ async def delete_account(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Current password is invalid",
         )
+    cv = await db.scalar(select(UserCV).where(UserCV.user_id == locked_user.id))
+    cv_paths = {cv.storage_object_path} if cv is not None else set()
+    for cv_path in cv_paths:
+        await enqueue_storage_deletion(db, cv_path)
     await db.delete(locked_user)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
