@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from pydantic import ValidationError
 
+from app.api.layoff_simulations import _naturalize_narrative
 from app.core.ai import (
     AIProviderResponseError,
     AIProviderUnavailable,
@@ -105,6 +106,19 @@ class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
             schema["$defs"]["SignalResult"]["properties"]["reason"]["minLength"],
             40,
         )
+
+    def test_layoff_narrative_hides_internal_identifiers(self) -> None:
+        value = _naturalize_narrative(
+            "Skenario one_month memiliki overall_resilience 75 dan "
+            "financial_readiness kuat dengan runway_months 12. "
+            "unknown_internal_field tidak boleh memakai garis bawah."
+        )
+
+        self.assertNotIn("_", value)
+        self.assertIn("satu bulan", value)
+        self.assertIn("ketahanan keseluruhan", value)
+        self.assertIn("kesiapan finansial", value)
+        self.assertIn("masa aman finansial", value)
 
     async def test_structured_response_is_validated(self) -> None:
         client = MagicMock()

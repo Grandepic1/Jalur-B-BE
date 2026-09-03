@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
@@ -11,8 +12,8 @@ from app.api.financial import TARGET_RUNWAY_MONTHS, _asset_totals, _runway_previ
 from app.core.ai import AIProviderError, StructuredAIProvider, get_ai_provider
 from app.core.database import get_db
 from app.core.scoring import (
-    SCORE_VERSION,
     PROMPT_VERSION,
+    SCORE_VERSION,
     score,
     weighted,
 )
@@ -26,20 +27,66 @@ from app.models.evidence import EvidenceItem
 from app.models.financial import FinancialProfile
 from app.models.health import HealthAssessment
 from app.models.layoff import LayoffSimulation, SimulationActionItem
-from app.models.pivot import PivotAnalysis, PivotPreferredRole, PivotSkillGap
 from app.models.master import Skill
+from app.models.pivot import PivotAnalysis, PivotPreferredRole, PivotSkillGap
 from app.models.risk import RiskScan
 from app.models.user import User
-
 
 router = APIRouter(prefix="/api/layoff-simulations", tags=["layoff simulations"])
 
 SIMULATION_INSTRUCTION = """
 Write a concise Indonesian layoff-scenario explanation and a practical emergency action
-plan using only the calculated values, roles, and skill gaps supplied. Do not recalculate
-or change scores. Do not promise employment outcomes or invent financial values. Produce
-between three and six ordered actions spanning immediate, short_term, and long_term phases.
+plan using only the calculated values, roles, and skill gaps supplied. Do not
+recalculate or change scores. Do not promise employment outcomes or invent financial
+values. Produce between three and six ordered actions spanning immediate, short_term,
+and long_term phases.
+
+Write for an end user, not a developer. Never repeat JSON keys, enum values, snake_case
+identifiers, or English implementation labels. Integrate the facts into natural
+Use natural Indonesian sentences instead of listing raw fields. For example, say
+"satu bulan" rather than
+"one_month", "ketahanan keseluruhan" rather than "overall_resilience", "kesiapan
+finansial" rather than "financial_readiness", and "masa aman finansial" rather than
+"runway_months".
 """
+
+NARRATIVE_TERMS = {
+    "tomorrow": "besok",
+    "one_month": "satu bulan",
+    "three_months": "tiga bulan",
+    "overall_resilience": "ketahanan keseluruhan",
+    "financial_readiness": "kesiapan finansial",
+    "career_readiness": "kesiapan karier",
+    "skill_relevance": "relevansi keterampilan",
+    "job_mobility": "mobilitas karier",
+    "career_risk": "risiko karier",
+    "runway_months": "masa aman finansial",
+    "target_months": "target masa aman",
+    "gap_amount": "kekurangan dana",
+    "currency": "mata uang",
+    "evidence_count": "jumlah bukti karier",
+    "pivot_roles": "pilihan peran transisi",
+    "role_name": "nama peran",
+    "match_score": "skor kecocokan",
+    "preparation_time_months": "waktu persiapan dalam bulan",
+    "skill_gaps": "kesenjangan keterampilan",
+    "short_term": "jangka pendek",
+    "long_term": "jangka panjang",
+    "immediate": "segera",
+}
+
+
+def _naturalize_narrative(value: str) -> str:
+    for identifier, label in NARRATIVE_TERMS.items():
+        value = re.sub(
+            rf"\b{re.escape(identifier)}\b", label, value, flags=re.IGNORECASE
+        )
+    return re.sub(
+        r"\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b",
+        lambda match: match.group().replace("_", " "),
+        value,
+        flags=re.IGNORECASE,
+    )
 
 
 async def _latest(db: AsyncSession, model, user_id: int, timestamp):
@@ -67,14 +114,14 @@ def _response(
         target_runway_months=simulation.target_runway_months or TARGET_RUNWAY_MONTHS,
         financial_gap=simulation.financial_gap or Decimal("0"),
         evidence_count=simulation.evidence_count,
-        summary=simulation.summary or "",
+        summary=_naturalize_narrative(simulation.summary or ""),
         action_items=[
             {
                 "id": item.id,
                 "step_order": item.step_order,
                 "phase": item.phase.value,
-                "title": item.title,
-                "description": item.description,
+                "title": _naturalize_narrative(item.title),
+                "description": _naturalize_narrative(item.description),
                 "due_date": item.due_date,
                 "is_completed": item.is_completed,
             }
@@ -217,7 +264,7 @@ async def create_layoff_simulation(
         financial_gap=financial_gap,
         estimated_preparation_time_months=preparation_months,
         evidence_count=evidence_count,
-        summary=narrative.summary,
+        summary=_naturalize_narrative(narrative.summary),
         provider_model=provider.model,
         prompt_version=PROMPT_VERSION,
         scoring_version=SCORE_VERSION,
@@ -237,8 +284,8 @@ async def create_layoff_simulation(
             simulation_id=simulation.id,
             step_order=order,
             phase=generated.phase,
-            title=generated.title,
-            description=generated.description,
+            title=_naturalize_narrative(generated.title),
+            description=_naturalize_narrative(generated.description),
             due_date=today + timedelta(days=scenario_delay + generated.due_in_days),
             is_completed=False,
         )

@@ -270,15 +270,15 @@ class DashboardInsightResponse(BaseModel):
 
 class SimulationPlanItem(BaseModel):
     phase: ActionPhase
-    title: str = Field(..., min_length=1, max_length=200)
-    description: str = Field(..., min_length=1, max_length=1000)
+    title: str = Field(..., min_length=10, max_length=200)
+    description: str = Field(..., min_length=40, max_length=1000)
     due_in_days: int = Field(..., ge=0, le=365)
 
     model_config = ConfigDict(extra="forbid")
 
 
 class SimulationAIResult(BaseModel):
-    summary: str = Field(..., min_length=1, max_length=2000)
+    summary: str = Field(..., min_length=80, max_length=2000)
     action_items: list[SimulationPlanItem] = Field(..., min_length=1, max_length=8)
 
     model_config = ConfigDict(extra="forbid")
