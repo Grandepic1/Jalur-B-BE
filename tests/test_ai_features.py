@@ -4,8 +4,10 @@ from types import SimpleNamespace
 from unittest import IsolatedAsyncioTestCase, TestCase
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from fastapi import HTTPException
 from pydantic import ValidationError
 
+from app.api.ai_assessments import _load_context
 from app.api.layoff_simulations import _naturalize_narrative
 from app.core.ai import (
     AIProviderResponseError,
@@ -20,7 +22,12 @@ from app.core.scoring import (
     risk_level,
     weighted,
 )
-from app.models.ai_features import CareerAnalysisAIResult, EvidenceAssistantDraft
+from app.models.ai_features import (
+    MAX_ASSESSMENT_SKILLS,
+    CareerAnalysisAIResult,
+    CareerAssessmentRequest,
+    EvidenceAssistantDraft,
+)
 from app.models.market_baseline import (
     MarketBaselineAIResult,
     MarketBaselineRefreshRequest,
@@ -100,7 +107,42 @@ class AiRouteContractTests(TestCase):
             self.assertEqual(set(paths[path]), methods)
 
 
+class AssessmentContextTests(IsolatedAsyncioTestCase):
+    async def test_rejects_profiles_beyond_the_supported_skill_limit(self) -> None:
+        db = MagicMock()
+        db.scalar = AsyncMock(return_value=SimpleNamespace(
+            current_role_name="Engineer",
+            industry_name="Technology",
+            daily_activities="Maintain systems",
+            work_duration_months=24,
+        ))
+        skill_result = MagicMock()
+        skill_result.all.return_value = [
+            SimpleNamespace(id=index, name=f"Skill {index}")
+            for index in range(MAX_ASSESSMENT_SKILLS + 1)
+        ]
+        db.scalars = AsyncMock(return_value=skill_result)
+
+        with self.assertRaisesRegex(HTTPException, "support at most") as raised:
+            await _load_context(
+                db,
+                user_id=1,
+                payload=CareerAssessmentRequest(),
+            )
+
+        self.assertEqual(raised.exception.status_code, 422)
+
+
 class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
+    def test_career_analysis_supports_cv_expanded_skill_profiles(self) -> None:
+        schema = CareerAnalysisAIResult.model_json_schema()
+
+        self.assertEqual(
+            schema["properties"]["skills"]["maxItems"],
+            MAX_ASSESSMENT_SKILLS,
+        )
+        self.assertGreaterEqual(MAX_ASSESSMENT_SKILLS, 28)
+
     def test_career_analysis_requires_substantive_text(self) -> None:
         schema = CareerAnalysisAIResult.model_json_schema()
 

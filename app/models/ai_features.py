@@ -8,6 +8,12 @@ from app.models.evidence import EvidenceType
 from app.models.layoff import ActionPhase, LayoffScenario
 
 
+# CV confirmation merges extracted skills into the user's existing profile. Keep the
+# structured-output limit aligned with the largest profile the assessment endpoint
+# supports, rather than the smaller onboarding-only limit.
+MAX_ASSESSMENT_SKILLS = 32
+
+
 class SignalLevel(str, PyEnum):
     weak = "weak"
     moderate = "moderate"
@@ -70,7 +76,9 @@ class PivotRoleResult(BaseModel):
 
 class CareerAnalysisAIResult(BaseModel):
     activities: list[ActivityResult] = Field(..., min_length=1, max_length=8)
-    skills: list[SkillResult] = Field(..., min_length=1, max_length=12)
+    skills: list[SkillResult] = Field(
+        ..., min_length=1, max_length=MAX_ASSESSMENT_SKILLS
+    )
     performance_growth: SignalResult
     adaptability: SignalResult
     market_demand: SignalResult

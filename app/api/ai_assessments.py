@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 from math import ceil
 
@@ -44,6 +45,7 @@ from app.models.ai_features import (
     CareerAssessmentRequest,
     ExposureAssessmentResult,
     HealthAssessmentResult,
+    MAX_ASSESSMENT_SKILLS,
     PivotAssessmentResult,
     PivotRoleResponse,
     RiskAssessmentResult,
@@ -67,6 +69,7 @@ from app.models.user_skills import UserSkill
 
 
 router = APIRouter(tags=["AI assessments"])
+logger = logging.getLogger(__name__)
 
 FACTOR_TITLES = {
     "performance_growth": "Performa & Perkembangan",
@@ -150,6 +153,14 @@ async def _load_context(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Add at least one skill before running career assessments",
+        )
+    if len(skills) > MAX_ASSESSMENT_SKILLS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=(
+                f"Career assessments support at most {MAX_ASSESSMENT_SKILLS} skills; "
+                f"this profile has {len(skills)}. Remove or consolidate skills first."
+            ),
         )
     evidence_rows = list(
         (
@@ -713,10 +724,25 @@ async def create_career_assessments(
             input_data=snapshot,
         )
     except AIProviderError as exc:
+        logger.warning(
+            "Career assessment provider failure for user_id=%s: %s: %s",
+            user.id,
+            type(exc).__name__,
+            exc,
+        )
         raise _provider_error(exc) from None
     expected_skills = {skill.name.lower() for skill in skills}
     generated_skills = {skill.name.lower() for skill in ai_result.skills}
     if generated_skills != expected_skills:
+        logger.warning(
+            "Career assessment skill mismatch for user_id=%s: expected=%s "
+            "generated=%s missing=%s extra=%s",
+            user.id,
+            len(expected_skills),
+            len(generated_skills),
+            len(expected_skills - generated_skills),
+            len(generated_skills - expected_skills),
+        )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI provider did not classify every supplied skill exactly once",
