@@ -9,6 +9,23 @@ Career & financial resilience platform: membantu pekerja mempersiapkan diri meng
 - **PostgreSQL** (Supabase pooler or local)
 - **uv** as package manager
 
+## Prerequisites
+
+- Python 3.13 (the exact development version is recorded in `.python-version`)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- PostgreSQL with an accessible database for migrations and application runtime
+- Git
+
+Install `uv` if it is not already available:
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows PowerShell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
 ## Setup
 
 ```bash
@@ -27,6 +44,32 @@ uv run uvicorn main:app --reload
 ```
 
 Health check: `GET http://localhost:8000/health`
+
+For a production process, run without auto-reload:
+
+```bash
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+## Deployment and API Documentation
+
+- Production API: <https://jalur-b.fastapicloud.dev>
+- Health check: <https://jalur-b.fastapicloud.dev/health>
+- Swagger UI: <https://jalur-b.fastapicloud.dev/docs>
+- ReDoc: <https://jalur-b.fastapicloud.dev/redoc>
+- OpenAPI schema: <https://jalur-b.fastapicloud.dev/openapi.json>
+
+## Tests
+
+Run the complete unit and API contract test suite:
+
+```bash
+uv run python -m unittest discover -s tests -v
+```
+
+The test suite is verified with Python 3.13 on Windows. Unit and OpenAPI contract tests
+do not require a running web server. Application runtime and database migrations require
+the PostgreSQL connection configured through `DATABASE_URL`.
 
 ## Database
 
@@ -62,7 +105,8 @@ main.py         # FastAPI app entrypoint
 AI behavior, formulas, score thresholds, and limitations are documented in
 [`AI_SCORING.md`](AI_SCORING.md).
 
-Auth (register/login) is planned next on top of the existing `users` table.
+Authentication is implemented with password registration/login, email verification,
+password reset, and Google OAuth.
 
 ## Authentication
 
