@@ -34,7 +34,7 @@ uv sync
 
 # 2. Configure environment
 cp .env.example .env
-# edit DATABASE_URL to point at your Postgres instance
+# edit DATABASE_URL and set GEMINI_API_KEY (create one in Google AI Studio)
 
 # 3. Run migrations
 uv run alembic upgrade head
@@ -217,7 +217,7 @@ The preview response has this shape:
   },
   "skills": ["Python", "API Design"],
   "experiences": [],
-  "model": "muse-spark-1.2-contributor-free"
+  "model": "gemini-3.8-flash"
 }
 ```
 
@@ -236,8 +236,10 @@ retryable storage-cleanup queue.
 
 - `GET /api/profile/cv` returns the confirmed CV career history and the model used.
 - PDF and DOCX are supported up to 5 MB; scanned PDFs without readable text are rejected.
-- CV text is sent to the configured Contributor Free model and may be used for model
-  training. The frontend must disclose this before upload.
+- CV text is sent to the configured Gemini model. Under Gemini's unpaid-service terms,
+  submitted content may be used to improve Google products; a billing-enabled project
+  receives Google's paid-service data protections. The frontend must disclose the
+  applicable data handling before upload.
 
 Email and username are intentionally not editable through the profile endpoint because
 account identity changes require separate verification flows.

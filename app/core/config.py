@@ -13,11 +13,10 @@ class Settings(BaseSettings):
     jwt_access_token_minutes: int = 60
     google_client_id: str = ""
     google_client_secret: str = ""
-    opencode_zen_api_key: str = ""
-    opencode_zen_base_url: str = "https://opencode.ai/zen/v1"
-    opencode_zen_model: str = "muse-spark-1.2-contributor-free"
-    opencode_zen_timeout_seconds: float = 120
-    opencode_zen_max_output_tokens: int = 16384
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.8-flash"
+    gemini_timeout_seconds: float = 120
+    gemini_max_output_tokens: int = 16384
     market_baseline_admin_key: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
@@ -56,12 +55,8 @@ class Settings(BaseSettings):
         )
 
     @property
-    def opencode_zen_configured(self) -> bool:
-        return bool(
-            self.opencode_zen_api_key
-            and self.opencode_zen_base_url
-            and self.opencode_zen_model
-        )
+    def gemini_configured(self) -> bool:
+        return bool(self.gemini_api_key and self.gemini_model)
 
     model_config = SettingsConfigDict(
         env_file=".env",

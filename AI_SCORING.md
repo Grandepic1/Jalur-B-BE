@@ -1,23 +1,23 @@
 # AI and scoring
 
-Jalur B uses Muse Spark 1.2 Contributor Free through OpenCode Zen for bounded
-classification and Indonesian
-explanations. Numeric scores are calculated by backend code under `career-resilience-v1`;
-the model never supplies final numeric scores.
+Jalur B uses Gemini through the official Google Gen AI SDK for bounded classification
+and Indonesian explanations. Numeric scores are calculated by backend code under
+`career-resilience-v1`; the model never supplies final numeric scores.
 
 ## Provider
 
-- Provider: OpenCode Zen through its OpenAI Responses-compatible API
-- Default model: `muse-spark-1.2-contributor-free`
+- Provider: Gemini Developer API through the Google Gen AI SDK
+- Default model: `gemini-3.8-flash`
 - Responses use JSON Schema mode and are validated again with Pydantic.
-- Contributor Free prompts and completions may be used to train future Meta models.
+- Google may use unpaid-service prompts and responses to improve its products. Use a
+  billing-enabled Gemini API project for Google's paid-service data protections.
 - Prompt version: `career-analysis-v1`
 - Provider failures do not create partial assessment snapshots.
 
-Model knowledge is not a substitute for sourced live market data. Muse structured completions
-do not provide grounded web-search citations, so market-baseline refresh returns an explicit
-unavailable response rather than creating unsourced drafts. Existing approved baselines remain
-usable. Assessments prefer matching signals from the current approved
+Model knowledge is not a substitute for sourced live market data. Market-baseline refresh uses
+Gemini's Google Search grounding and refuses to create a draft when the response contains no
+grounded citations. Existing approved baselines remain usable. Assessments prefer matching
+signals from the current approved
 baseline and expose the immutable `market_baseline_version`; unmatched subjects remain model
 estimates and do not claim grounding.
 
@@ -25,8 +25,8 @@ estimates and do not claim grounding.
 
 - Set `MARKET_BASELINE_ADMIN_KEY` to protect management operations. Management calls also
   require a verified user access token so the creator and approver are auditable.
-- `POST /api/market-baselines/refresh` requires a provider with grounded web-search citations.
-  It is unavailable with the current OpenCode Zen provider, which prevents fabricated sources.
+- `POST /api/market-baselines/refresh` uses Gemini Google Search grounding and requires at
+  least one citation before it creates a draft.
 - Review drafts with `GET /api/market-baselines?status=draft` and their citations.
 - Approve with `POST /api/market-baselines/{id}/approve`, or reject with
   `POST /api/market-baselines/{id}/reject`. Approving archives the previous baseline and never
@@ -130,7 +130,8 @@ snapshot. Historical scores are not recalculated when formulas or models change.
 
 - Results are decision support, not employment predictions.
 - User-authored facts can be incomplete or inaccurate.
-- CV text sent to the Contributor Free model may be used for future Meta model training.
+- CV text sent through Gemini's unpaid service may be used to improve Google products. Use a
+  billing-enabled project when paid-service data protections are required.
 - Scanned PDFs require OCR and are rejected by the current text-only CV extractor.
 - A signal is described as sourced only when its assessment includes a non-null approved
   `market_baseline_version`; unmatched subjects are explicitly model estimates.

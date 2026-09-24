@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from docx import Document
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
+from sqlalchemy.exc import MissingGreenlet
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.cv import (
@@ -35,6 +36,31 @@ from app.models.cv import (
 )
 from app.models.master import Skill
 from app.models.profile import UserProfile
+
+
+class _ExpiringUser:
+    """Mimics a session-bound SQLAlchemy User whose attributes were expired.
+
+    A real AsyncSession expires every loaded ORM object on rollback()/commit();
+    reading an expired attribute afterwards raises MissingGreenlet because the
+    lazy reload cannot run outside the async greenlet. The CV endpoints snapshot
+    user.id before any rollback/commit, so they must never touch the user after.
+    """
+
+    def __init__(self, user_id: int = 7) -> None:
+        self._user_id = user_id
+        self._expired = False
+
+    @property
+    def id(self) -> int:
+        if self._expired:
+            raise MissingGreenlet(
+                "greenlet_spawn has not been called; can't call await_only() here."
+            )
+        return self._user_id
+
+    def expire(self) -> None:
+        self._expired = True
 
 
 class CVExtractionTests(TestCase):
@@ -530,3 +556,69 @@ class CVConfirmationTests(IsolatedAsyncioTestCase):
         self.assertEqual(len(enqueue_calls), 1)
         self.assertEqual(db.commit.await_count, 1)
         immediate_cleanup.assert_awaited_once_with(db, "users/7/cv/legacy.pdf")
+
+    async def test_preview_survives_rollback_session_expiry(self) -> None:
+        # Regression: db.rollback() expires the session-bound user; the endpoint
+        # used to read user.id afterwards, raising MissingGreenlet (a bare 500
+        # without CORS headers on the deployed API).
+        document = Document()
+        document.add_paragraph(
+            "Joan Orlando, Backend Engineer dengan pengalaman membangun API produksi."
+        )
+        stream = BytesIO()
+        document.save(stream)
+        upload = UploadFile(filename="resume.docx", file=BytesIO(stream.getvalue()))
+        extraction = CVExtractionAIResult(
+            profile={
+                "full_name": "Joan Orlando",
+                "current_role_name": "Backend Engineer",
+                "industry_name": None,
+                "work_duration_months": None,
+                "daily_activities": "Membangun dan menjaga API produksi.",
+            },
+            skills=[],
+            experiences=[],
+        )
+        provider = MagicMock(model="test-model")
+        provider.generate_structured = AsyncMock(return_value=extraction)
+        user = _ExpiringUser(7)
+        db = MagicMock(spec=AsyncSession)
+        db.scalar = AsyncMock(side_effect=[11])
+        db.rollback = AsyncMock(side_effect=user.expire)
+
+        with patch.object(settings, "jwt_secret_key", "x" * 64):
+            response = await preview_cv(upload, user, db, provider)
+
+        with patch.object(settings, "jwt_secret_key", "x" * 64):
+            token_data = _decode_preview_token(response.preview_token)
+        self.assertEqual(response.profile.full_name, "Joan Orlando")
+        self.assertEqual(token_data.user_id, 7)
+
+    async def test_confirm_survives_rollback_session_expiry(self) -> None:
+        # Regression: db.rollback()/db.commit() expire the session-bound user;
+        # the endpoint used to read user.id afterwards (lazy reload outside the
+        # async greenlet -> MissingGreenlet -> bare 500).
+        token = self._signed_token()
+        now = datetime.now(UTC)
+        profile = self._profile(now)
+        user = _ExpiringUser(7)
+        db = self._db()
+        db.scalar = AsyncMock(side_effect=[None, 7, None, profile, None])
+        db.scalars = AsyncMock(side_effect=[SimpleNamespace(all=lambda: [])])
+        db.rollback = AsyncMock(side_effect=user.expire)
+        db.commit = AsyncMock(side_effect=user.expire)
+
+        response = await confirm_cv(
+            CVConfirmRequest(
+                preview_token=token,
+                profile={},
+                skills=[],
+                experiences=[],
+            ),
+            user,
+            db,
+        )
+
+        self.assertEqual(response.cv.experiences, [])
+        self.assertEqual(response.profile.full_name, "Old Name")
+        self.assertEqual(db.commit.await_count, 1)

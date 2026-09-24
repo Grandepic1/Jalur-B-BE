@@ -11,8 +11,7 @@ from app.api.ai_assessments import _load_context
 from app.api.layoff_simulations import _naturalize_narrative
 from app.core.ai import (
     AIProviderResponseError,
-    AIProviderUnavailable,
-    OpenCodeZenProvider,
+    GeminiProvider,
 )
 from app.core.config import settings
 from app.core.scoring import (
@@ -110,12 +109,14 @@ class AiRouteContractTests(TestCase):
 class AssessmentContextTests(IsolatedAsyncioTestCase):
     async def test_rejects_profiles_beyond_the_supported_skill_limit(self) -> None:
         db = MagicMock()
-        db.scalar = AsyncMock(return_value=SimpleNamespace(
-            current_role_name="Engineer",
-            industry_name="Technology",
-            daily_activities="Maintain systems",
-            work_duration_months=24,
-        ))
+        db.scalar = AsyncMock(
+            return_value=SimpleNamespace(
+                current_role_name="Engineer",
+                industry_name="Technology",
+                daily_activities="Maintain systems",
+                work_duration_months=24,
+            )
+        )
         skill_result = MagicMock()
         skill_result.all.return_value = [
             SimpleNamespace(id=index, name=f"Skill {index}")
@@ -133,7 +134,7 @@ class AssessmentContextTests(IsolatedAsyncioTestCase):
         self.assertEqual(raised.exception.status_code, 422)
 
 
-class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
+class GeminiProviderTests(IsolatedAsyncioTestCase):
     def test_career_analysis_supports_cv_expanded_skill_profiles(self) -> None:
         schema = CareerAnalysisAIResult.model_json_schema()
 
@@ -167,10 +168,9 @@ class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
 
     async def test_structured_response_is_validated(self) -> None:
         client = MagicMock()
-        client.responses.create = AsyncMock(
+        client.models.generate_content = AsyncMock(
             return_value=SimpleNamespace(
-                status="completed",
-                output_text=json.dumps(
+                text=json.dumps(
                     {
                         "title": "Migrasi platform",
                         "description": "Memigrasikan platform.",
@@ -181,80 +181,109 @@ class OpenCodeZenProviderTests(IsolatedAsyncioTestCase):
         )
 
         with (
-            patch.object(settings, "opencode_zen_api_key", "test-key"),
-            patch.object(settings, "opencode_zen_model", "test-model"),
+            patch.object(settings, "gemini_api_key", "test-key"),
+            patch.object(settings, "gemini_model", "test-model"),
         ):
-            result = await OpenCodeZenProvider(client).generate_structured(
+            result = await GeminiProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={"story": "test"},
             )
         self.assertEqual(result.title, "Migrasi platform")
-        request = client.responses.create.await_args.kwargs
+        request = client.models.generate_content.await_args.kwargs
         self.assertEqual(request["model"], "test-model")
-        self.assertEqual(request["temperature"], 0.2)
-        self.assertEqual(
-            request["max_output_tokens"], settings.opencode_zen_max_output_tokens
-        )
-        response_format = request["text"]["format"]
-        self.assertEqual(response_format["type"], "json_schema")
-        self.assertTrue(response_format["strict"])
-        schema = response_format["schema"]
+        config = request["config"]
+        self.assertEqual(config.temperature, 0.2)
+        self.assertEqual(config.max_output_tokens, settings.gemini_max_output_tokens)
+        self.assertEqual(config.response_mime_type, "application/json")
+        schema = config.response_json_schema
         self.assertEqual(schema["required"], ["title", "description", "impact"])
         self.assertFalse(schema["additionalProperties"])
+        self.assertIsNone(config.tools)
 
     async def test_invalid_json_is_rejected(self) -> None:
         client = MagicMock()
-        client.responses.create = AsyncMock(
-            return_value=SimpleNamespace(
-                status="completed",
-                output_text="not json",
-            )
+        client.models.generate_content = AsyncMock(
+            return_value=SimpleNamespace(text="not json")
         )
 
         with (
-            patch.object(settings, "opencode_zen_api_key", "test-key"),
-            patch.object(settings, "opencode_zen_model", "test-model"),
+            patch.object(settings, "gemini_api_key", "test-key"),
+            patch.object(settings, "gemini_model", "test-model"),
             self.assertRaises(AIProviderResponseError),
         ):
-            await OpenCodeZenProvider(client).generate_structured(
+            await GeminiProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={},
             )
 
-    async def test_incomplete_response_reports_reason(self) -> None:
+    async def test_empty_response_is_rejected(self) -> None:
         client = MagicMock()
-        client.responses.create = AsyncMock(
-            return_value=SimpleNamespace(
-                status="incomplete",
-                incomplete_details=SimpleNamespace(reason="max_output_tokens"),
-                output_text="",
-            )
+        client.models.generate_content = AsyncMock(
+            return_value=SimpleNamespace(text="")
         )
 
         with (
-            patch.object(settings, "opencode_zen_api_key", "test-key"),
-            patch.object(settings, "opencode_zen_model", "test-model"),
-            self.assertRaisesRegex(AIProviderResponseError, "max_output_tokens"),
+            patch.object(settings, "gemini_api_key", "test-key"),
+            patch.object(settings, "gemini_model", "test-model"),
+            self.assertRaisesRegex(AIProviderResponseError, "empty"),
         ):
-            await OpenCodeZenProvider(client).generate_structured(
+            await GeminiProvider(client).generate_structured(
                 response_type=EvidenceAssistantDraft,
                 system_instruction="Test",
                 input_data={},
             )
 
-    async def test_grounded_generation_is_explicitly_unavailable(self) -> None:
+    async def test_grounded_generation_returns_search_provenance(self) -> None:
+        grounding = SimpleNamespace(
+            grounding_chunks=[
+                SimpleNamespace(
+                    web=SimpleNamespace(
+                        title="BPS Indonesia", url=None, uri="https://bps.go.id/source"
+                    )
+                )
+            ],
+            model_dump=MagicMock(
+                return_value={"webSearchQueries": ["Indonesia Python jobs"]}
+            ),
+        )
+        client = MagicMock()
+        client.models.generate_content = AsyncMock(
+            return_value=SimpleNamespace(
+                text=json.dumps(
+                    {
+                        "summary": "Permintaan tetap kuat.",
+                        "signals": [
+                            {
+                                "subject_type": "skill",
+                                "subject_name": "Python",
+                                "signal_type": "skill_relevance",
+                                "classification": "rising",
+                                "rationale": "Digunakan luas di pasar kerja.",
+                            }
+                        ],
+                    }
+                ),
+                candidates=[SimpleNamespace(grounding_metadata=grounding)],
+            )
+        )
         with (
-            patch.object(settings, "opencode_zen_api_key", "test-key"),
-            patch.object(settings, "opencode_zen_model", "test-model"),
-            self.assertRaises(AIProviderUnavailable),
+            patch.object(settings, "gemini_api_key", "test-key"),
+            patch.object(settings, "gemini_model", "test-model"),
         ):
-            await OpenCodeZenProvider(MagicMock()).generate_grounded_structured(
+            result = await GeminiProvider(client).generate_grounded_structured(
                 response_type=MarketBaselineAIResult,
                 system_instruction="Research",
                 input_data={"country": "Indonesia"},
             )
+        self.assertEqual(result.search_queries, ["Indonesia Python jobs"])
+        self.assertEqual(
+            result.citations,
+            [{"title": "BPS Indonesia", "url": "https://bps.go.id/source"}],
+        )
+        config = client.models.generate_content.await_args.kwargs["config"]
+        self.assertIsNotNone(config.tools[0].google_search)
 
 
 class MarketBaselineSchemaTests(TestCase):
