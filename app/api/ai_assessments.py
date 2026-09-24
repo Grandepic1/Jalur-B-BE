@@ -89,7 +89,7 @@ HEALTH_STATUS = {
 }
 
 CAREER_ANALYSIS_INSTRUCTION = """
-Analyze the supplied career profile for an Indonesian career-resilience application.
+Analyze the supplied career profile for an Indonesian career-resilience application. Do not be naive and you must score truthfully and objectively as possible in how lacks the user's career.
 Classify signals only into the enums in the schema; never assign numeric scores.
 Use the user's supplied facts as the source of truth. General labor-market knowledge may
 inform qualitative classifications, but do not invent statistics, employers, credentials,
