@@ -8,7 +8,8 @@ from app.models.financial import (
     FinancialAssetType,
     LiquidityLevel,
 )
-from app.models.layoff import LayoffScenario, LayoffSimulation, LayoffSimulationCreate
+from app.core.entitlements import DEFAULT_SEARCH_TIME_MONTHS, ExitType
+from app.models.layoff import LayoffSimulation, LayoffSimulationCreate
 from app.models.pivot import PivotAnalysis, PivotPreferredRole
 from app.models.profile import CareerGoal, OnboardingCreate, UserProfile
 
@@ -55,6 +56,19 @@ class FrontendContractModelTests(TestCase):
             {"scenario", "skill_relevance_score", "job_mobility_score", "evidence_count"}
             <= set(LayoffSimulation.__table__.columns.keys())
         )
+        # Exit-aware fields: the simulation records which exit ground drove its numbers
+        # and the regulation version those numbers came from.
+        self.assertTrue(
+            {
+                "exit_type",
+                "regulation_version",
+                "search_time_months",
+                "transition_gap_months",
+                "transition_gap_status",
+                "transition_role_name",
+            }
+            <= set(LayoffSimulation.__table__.columns.keys())
+        )
         self.assertIn("ai_generated", EvidenceItem.__table__.columns)
 
 
@@ -97,4 +111,29 @@ class FrontendContractSchemaTests(TestCase):
         simulation = LayoffSimulationCreate()
 
         self.assertFalse(evidence.ai_generated)
-        self.assertIs(simulation.scenario, LayoffScenario.tomorrow)
+        # The exit ground replaced the old time-based scenario choice; the search time is
+        # an explicit, visible assumption.
+        self.assertIs(simulation.exit_type, ExitType.efficiency_due_to_loss)
+        self.assertEqual(simulation.search_time_months, DEFAULT_SEARCH_TIME_MONTHS)
+
+    def test_employment_terms_model_exposes_statutory_inputs(self) -> None:
+        from app.models.employment import EmploymentTerms, ExitRunwayCalculation
+
+        self.assertTrue(
+            {
+                "monthly_wage_base",
+                "employment_type",
+                "assumed_exit_type",
+                "contract_start_date",
+                "contract_end_date",
+                "tenure_months",
+                "bpjs_tk_active",
+                "jkn_active",
+                "bpjs_contribution_months_last_24",
+                "bpjs_consecutive_months",
+                "jht_balance",
+                "unused_leave_days",
+            }
+            <= set(EmploymentTerms.__table__.columns.keys())
+        )
+        self.assertIn("regulation_version", ExitRunwayCalculation.__table__.columns)

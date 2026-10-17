@@ -1,9 +1,13 @@
 from decimal import Decimal
-from unittest import TestCase
+from unittest import IsolatedAsyncioTestCase, TestCase
 
 from pydantic import ValidationError
 
-from app.api.financial import _calculate_financial_readiness, _runway_preview
+from app.api.financial import (
+    REFERENCE_RUNWAY_MONTHS,
+    _financial_readiness_for,
+    _runway_preview,
+)
 from app.models.financial import (
     FinancialAssetCreate,
     FinancialAssetType,
@@ -58,9 +62,9 @@ class FinancialSchemaTests(TestCase):
                 FinancialAssetUpdate(**payload)
 
 
-class RunwayCalculationTests(TestCase):
-    def test_runway_uses_only_liquid_assets_and_total_monthly_burn(self) -> None:
-        profile = FinancialProfile(
+class RunwayCalculationTests(IsolatedAsyncioTestCase):
+    def _profile(self) -> FinancialProfile:
+        return FinancialProfile(
             user_id=1,
             available_savings=Decimal("10000000"),
             monthly_essential_expenses=Decimal("4000000"),
@@ -70,35 +74,76 @@ class RunwayCalculationTests(TestCase):
             currency="IDR",
         )
 
-        preview = _runway_preview(
+    async def test_runway_uses_only_liquid_assets_and_total_monthly_burn(self) -> None:
+        profile = self._profile()
+
+        preview = await _runway_preview(
             profile,
-            total_assets=Decimal("20000000"),
-            liquid_assets=Decimal("10000000"),
+            Decimal("20000000"),
+            Decimal("10000000"),
+            REFERENCE_RUNWAY_MONTHS,
         )
 
         self.assertEqual(preview.monthly_burn, Decimal("5000000"))
         self.assertEqual(preview.financial_runway_months, Decimal("2.00"))
         self.assertEqual(preview.runway_gap_months, Decimal("4.00"))
+        # The flat six-month line is reported separately and no longer drives the score.
+        self.assertEqual(preview.reference_runway_months, REFERENCE_RUNWAY_MONTHS)
+        self.assertEqual(preview.target_runway_months, REFERENCE_RUNWAY_MONTHS)
+        self.assertEqual(preview.target_basis, "reference_default_no_pivot_analysis")
 
-    def test_financial_readiness_tracks_current_liquidity_and_burn(self) -> None:
-        profile = FinancialProfile(
-            user_id=1,
-            available_savings=Decimal("0"),
-            monthly_essential_expenses=Decimal("4000000"),
-            monthly_debt_payment=Decimal("1000000"),
-            dependents=0,
-            other_liquid_funds=Decimal("0"),
-            currency="IDR",
+    async def test_runway_gap_uses_the_personal_target(self) -> None:
+        profile = self._profile()
+
+        preview = await _runway_preview(
+            profile,
+            Decimal("20000000"),
+            Decimal("10000000"),
+            Decimal("10"),
+            target_basis="pivot_preparation_plus_search",
         )
 
+        self.assertEqual(preview.target_runway_months, Decimal("10"))
+        self.assertEqual(preview.runway_gap_months, Decimal("8.00"))
+        self.assertEqual(preview.target_basis, "pivot_preparation_plus_search")
+
+    async def test_financial_readiness_tracks_liquidity_target_and_burn(self) -> None:
+        profile = self._profile()
+
         self.assertEqual(
-            _calculate_financial_readiness(profile, Decimal("15000000")),
+            _financial_readiness_for(
+                profile, Decimal("15000000"), Decimal("6"), None
+            ),
             Decimal("50.00"),
         )
         self.assertEqual(
-            _calculate_financial_readiness(profile, Decimal("30000000")),
+            _financial_readiness_for(
+                profile, Decimal("30000000"), Decimal("6"), None
+            ),
             Decimal("100.00"),
         )
+        # A longer personal target lowers readiness for the same savings.
+        self.assertEqual(
+            _financial_readiness_for(
+                profile, Decimal("30000000"), Decimal("12"), None
+            ),
+            Decimal("50.00"),
+        )
+
+    async def test_implausibly_low_expenses_are_flagged(self) -> None:
+        profile = self._profile()
+        profile.monthly_essential_expenses = Decimal("900000")
+        profile.dependents = 2
+
+        preview = await _runway_preview(
+            profile,
+            Decimal("10000000"),
+            Decimal("10000000"),
+            REFERENCE_RUNWAY_MONTHS,
+        )
+
+        self.assertIsNotNone(preview.cost_of_living_warning)
+        self.assertIsNotNone(preview.poverty_line_version)
 
 
 class FinancialRouteTests(TestCase):
@@ -113,3 +158,8 @@ class FinancialRouteTests(TestCase):
         self.assertEqual(set(paths["/api/financial/runway"]), {"get", "post"})
         self.assertEqual(set(paths["/api/financial/runway/latest"]), {"get"})
         self.assertEqual(set(paths["/api/financial/runway/history"]), {"get"})
+        self.assertEqual(
+            set(paths["/api/financial/employment-terms"]), {"get", "put"}
+        )
+        self.assertEqual(set(paths["/api/financial/exit-runway"]), {"post"})
+        self.assertEqual(set(paths["/api/financial/exit-runway/latest"]), {"get"})

@@ -4,6 +4,7 @@ from enum import Enum as PyEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.core.entitlements import DEFAULT_SEARCH_TIME_MONTHS, ExitType
 from app.models.evidence import EvidenceType
 from app.models.layoff import ActionPhase, LayoffScenario
 
@@ -175,6 +176,12 @@ class ExposureAssessmentResult(BaseModel):
     model: str
     scoring_version: str
     market_baseline_version: str | None
+    # Names of components that could not be measured. The frontend shows "data belum
+    # cukup" for these instead of rendering a placeholder score.
+    insufficient_data: list[str] = Field(default_factory=list)
+    # Share of subjects matched from the approved baseline. The remainder are model
+    # estimates and are labelled as such.
+    baseline_coverage_percent: Decimal | None = None
 
 
 class RiskAssessmentResult(BaseModel):
@@ -190,6 +197,8 @@ class RiskAssessmentResult(BaseModel):
     model: str
     scoring_version: str
     market_baseline_version: str | None
+    insufficient_data: list[str] = Field(default_factory=list)
+    baseline_coverage_percent: Decimal | None = None
 
 
 class PivotRoleResponse(BaseModel):
@@ -224,6 +233,8 @@ class HealthAssessmentResult(BaseModel):
     model: str
     scoring_version: str
     market_baseline_version: str | None
+    insufficient_data: list[str] = Field(default_factory=list)
+    baseline_coverage_percent: Decimal | None = None
 
 
 class CareerAssessmentBundleResponse(BaseModel):
@@ -293,7 +304,15 @@ class SimulationAIResult(BaseModel):
 
 
 class LayoffSimulationRequest(BaseModel):
-    scenario: LayoffScenario = LayoffScenario.tomorrow
+    """The exit ground drives the numbers; the search time is a visible assumption."""
+
+    exit_type: ExitType = ExitType.efficiency_due_to_loss
+    # Overrides the bankruptcy conservatism default. ``None`` keeps the default.
+    normative_rights_collectable: bool | None = None
+    search_time_months: Decimal = Field(DEFAULT_SEARCH_TIME_MONTHS, ge=0, le=24)
+    # Which pivot role's preparation time feeds the Transition Gap. Defaults to the
+    # highest match score.
+    preferred_role_name: str | None = Field(None, max_length=100)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -315,3 +334,13 @@ class LayoffSimulationResult(BaseModel):
     action_items: list[dict[str, object]]
     model: str
     scoring_version: str
+    # Nullable for simulations created before the exit-aware change.
+    exit_type: ExitType | None = None
+    regulation_version: str | None = None
+    search_time_months: Decimal | None = None
+    preparation_time_months: Decimal | None = None
+    transition_role_name: str | None = None
+    transition_gap_months: Decimal | None = None
+    transition_gap_status: str | None = None
+    role_transitions: list[dict[str, object]] = Field(default_factory=list)
+    insufficient_data: list[str] = Field(default_factory=list)

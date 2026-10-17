@@ -1,6 +1,6 @@
 # Jalur B - Database ERD v2 (Normalized, 3NF)
 
-Database: `jalurB` (MySQL). Dokumen ini memuat 35 tabel dan diselaraskan dengan model aplikasi serta seluruh migration sampai revision `e2a9c8f4b6d1`.
+Database: `jalurB` (PostgreSQL). Dokumen ini memuat 38 tabel dan diselaraskan dengan model aplikasi serta seluruh migration sampai revision `d4a7f0c23e54`.
 
 Buka **`jalurB-v2.erd`** menggunakan [ERD Editor](https://github.com/dineug/erd-editor) untuk melihat kolom, tipe data, nullability, default, primary key, foreign key, unique constraint, dan index secara visual.
 
@@ -60,6 +60,8 @@ erDiagram
     users ||--o| financial_profiles : configures
     users ||--o{ financial_assets : owns
     users ||--o{ runway_calculations : calculates
+    users ||--o| employment_terms : declares
+    users ||--o{ exit_runway_calculations : calculates
 
     users ||--o{ skill_missions : owns
     skills o|--o{ skill_missions : trains
@@ -68,6 +70,7 @@ erDiagram
     users ||--o{ layoff_simulations : simulates
     pivot_analyses o|--o{ layoff_simulations : provides_best_pivot
     layoff_simulations ||--o{ simulation_action_items : plans
+    layoff_simulations ||--o{ simulation_role_transitions : measures
 ```
 
 `storage_deletion_jobs` tidak memiliki foreign key karena merupakan outbox mandiri untuk retry penghapusan objek storage.
@@ -85,13 +88,16 @@ erDiagram
 | Career Pivot Map | `pivot_analyses`, `pivot_preferred_roles`, `pivot_skill_gaps` |
 | Evidence dan insight | `evidence_items`, `weekly_career_insights` |
 | Market baseline | `market_baselines`, `market_baseline_signals` |
-| Personal Runway | `financial_profiles`, `financial_assets`, `runway_calculations` |
+| Personal Runway | `financial_profiles`, `financial_assets`, `runway_calculations`, `employment_terms`, `exit_runway_calculations` |
 | Skill Missions | `skill_missions` |
-| Simulasi PHK | `layoff_simulations`, `simulation_action_items` |
+| Simulasi PHK | `layoff_simulations`, `simulation_action_items`, `simulation_role_transitions` |
 
 ## Constraint Penting
 
 - `users.username`, `users.email`, dan `skills.name` unik tanpa membedakan kapital pada konfigurasi database aplikasi.
+- `employment_terms.user_id` unik sehingga hubungannya satu-ke-satu dengan `users`. `monthly_wage_base` harus lebih dari nol dan `tenure_months` tidak boleh negatif.
+- `simulation_role_transitions` unik untuk pasangan `(simulation_id, role_name)`.
+- `exit_runway_calculations` menyimpan `regulation_version` pada setiap baris agar perubahan tabel pesangon di masa depan tidak menulis ulang hasil lama.
 - `user_profiles.user_id`, `user_cvs.user_id`, dan `financial_profiles.user_id` unik sehingga relasinya satu-ke-satu dengan `users`.
 - `user_skills` unik untuk pasangan `(user_id, skill_id)`; proficiency dibatasi 1-5 dan pengalaman 0-99,9 tahun.
 - `health_score_breakdowns` unik untuk pasangan `(assessment_id, dimension)`.

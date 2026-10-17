@@ -1,6 +1,6 @@
 import logging
+import re
 from decimal import Decimal
-from math import ceil
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
@@ -9,7 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.auth import get_verified_user
-from app.api.financial import TARGET_RUNWAY_MONTHS, _asset_totals, _runway_preview
+from app.api.financial import (
+    REFERENCE_RUNWAY_MONTHS,
+    _asset_totals,
+    _get_employment_terms,
+    _personal_target_months,
+    _runway_preview,
+)
 from app.core.ai import (
     AIProviderError,
     AIProviderUnavailable,
@@ -17,6 +23,7 @@ from app.core.ai import (
     get_ai_provider,
 )
 from app.core.database import get_db
+from app.core.entitlements import REGULATION_VERSION
 from app.core.scoring import (
     EXPOSURE_SCORES,
     PROMPT_VERSION,
@@ -24,13 +31,15 @@ from app.core.scoring import (
     SCORE_VERSION,
     SIGNAL_SCORES,
     average,
-    career_health,
+    career_readiness,
+    career_risk,
     exposure_level,
     health_level,
+    pivot_match,
     risk_level,
     score,
-    weighted,
 )
+from app.core.transition import preparation_months_for_gap_count
 from app.models.ai_exposure import (
     AiExposureAssessment,
     AiExposureSkill,
@@ -87,6 +96,82 @@ HEALTH_STATUS = {
     "medium": "Cukup Sehat",
     "high": "Sehat",
 }
+
+# Deliberately small and unambiguous. Baseline subject names previously had to match
+# character-for-character after lowercasing, so near-identical names never matched and the
+# system fell back to the model without saying so.
+SUBJECT_SYNONYMS = {
+    "js": "javascript",
+    "ts": "typescript",
+    "postgres": "postgresql",
+    "golang": "go",
+    "ai": "artificial intelligence",
+    "ml": "machine learning",
+    "hr": "human resources",
+}
+
+MODEL_ESTIMATE_LABEL = "estimasi model"
+
+# The dimensions that make up Career Readiness. Financial Readiness is deliberately absent:
+# it is a component of Overall Resilience, not of this score.
+CAREER_DIMENSIONS = (
+    "performance_growth",
+    "skill_relevance",
+    "adaptability",
+    "mobility",
+)
+
+
+def normalize_subject_name(value: str) -> str:
+    """Normalize a baseline subject name for comparison.
+
+    Punctuation and repeated whitespace are removed and a small synonym table collapses the
+    most common duplicates. Role matching still uses names; matching by ISCO-08 code is
+    tracked separately and is not implemented yet.
+    """
+    cleaned = re.sub(r"[^a-z0-9 ]+", " ", value.lower())
+    cleaned = " ".join(cleaned.split())
+    return SUBJECT_SYNONYMS.get(cleaned, cleaned)
+
+
+def subject_name_tokens(value: str) -> frozenset[str]:
+    return frozenset(normalize_subject_name(value).split())
+
+
+def _subject_matches(query: str, candidate: str) -> bool:
+    """True when the names are equal or one is a whole-word subset of the other.
+
+    Subset matching is what lets "Sales" match "Sales Executive" while keeping unrelated
+    names apart. It is deliberately conservative: every token of the shorter name must be
+    present in the longer one.
+    """
+    query_tokens = subject_name_tokens(query)
+    candidate_tokens = subject_name_tokens(candidate)
+    if not query_tokens or not candidate_tokens:
+        return False
+    return query_tokens <= candidate_tokens or candidate_tokens <= query_tokens
+
+
+def _lookup_signal(
+    signals: dict[tuple[str, str], MarketBaselineSignal],
+    subject_type: MarketSubjectType,
+    name: str,
+) -> MarketBaselineSignal | None:
+    """Find a baseline signal for a subject, tolerating wording differences."""
+    exact = signals.get((subject_type.value, normalize_subject_name(name)))
+    if exact is not None:
+        return exact
+    for (kind, candidate), signal in signals.items():
+        if kind == subject_type.value and _subject_matches(name, candidate):
+            return signal
+    return None
+
+
+def _label_model_estimate(text: str) -> str:
+    """Mark text that came from the model rather than a reviewed baseline."""
+    if MODEL_ESTIMATE_LABEL in text.lower():
+        return text
+    return f"{text} ({MODEL_ESTIMATE_LABEL})"
 
 CAREER_ANALYSIS_INSTRUCTION = """
 Analyze the supplied career profile for an Indonesian career-resilience application. Do not be naive and you must score truthfully and objectively as possible in how lacks the user's career.
@@ -175,13 +260,22 @@ async def _load_context(
     financial_profile = await db.scalar(
         select(FinancialProfile).where(FinancialProfile.user_id == user_id)
     )
-    runway_months = Decimal("0")
-    readiness = Decimal("0")
+    runway_value = Decimal("0")
+    target_months = REFERENCE_RUNWAY_MONTHS
+    target_basis = "reference_default_no_pivot_analysis"
     if financial_profile is not None:
         total_assets, liquid_assets = await _asset_totals(db, user_id)
-        runway = _runway_preview(financial_profile, total_assets, liquid_assets)
-        runway_months = runway.financial_runway_months
-        readiness = score(financial_profile.financial_readiness_score)
+        target_months, target_basis, _ = await _personal_target_months(db, user_id)
+        terms = await _get_employment_terms(db, user_id)
+        runway = await _runway_preview(
+            financial_profile,
+            total_assets,
+            liquid_assets,
+            target_months,
+            target_basis=target_basis,
+            terms=terms,
+        )
+        runway_value = runway.financial_runway_months
 
     snapshot: dict[str, object] = {
         "role_name": role_name,
@@ -207,8 +301,10 @@ async def _load_context(
             for item in evidence_rows
         ],
         "financial": {
-            "runway_months": str(runway_months),
-            "target_months": str(TARGET_RUNWAY_MONTHS),
+            "runway_months": str(runway_value),
+            "target_months": str(target_months),
+            "target_basis": target_basis,
+            "reference_months": str(REFERENCE_RUNWAY_MONTHS),
         }
         if financial_profile is not None
         else None,
@@ -221,14 +317,26 @@ async def _load_context(
         financial_profile is not None,
     ]
     confidence = score(sum(confidence_parts) * 20)
-    return snapshot, skills, readiness, confidence, len(evidence_rows)
+    # Components the assessment cannot measure at all. They are reported to the client so
+    # it can show "data belum cukup" rather than rendering a placeholder number.
+    insufficient_data: list[str] = []
+    if financial_profile is None:
+        insufficient_data.append("financial_readiness")
+    snapshot["insufficient_data"] = insufficient_data
+    return snapshot, skills, confidence, len(evidence_rows), insufficient_data
 
 
 async def _apply_market_baseline(
     db: AsyncSession,
     snapshot: dict[str, object],
     skills: list[Skill],
-) -> tuple[str | None, dict[tuple[str, str], MarketBaselineSignal]]:
+) -> tuple[str | None, dict[tuple[str, str], MarketBaselineSignal], dict[str, object]]:
+    """Match snapshot subjects against the approved baseline and report coverage.
+
+    Coverage is returned alongside the matches so the client can show how much of the
+    analysis is sourced from a reviewed baseline and how much is a model estimate, instead
+    of silently presenting both as equally grounded.
+    """
     baseline = await db.scalar(
         select(MarketBaseline)
         .options(selectinload(MarketBaseline.signals))
@@ -236,24 +344,48 @@ async def _apply_market_baseline(
         .order_by(MarketBaseline.approved_at.desc(), MarketBaseline.id.desc())
         .limit(1)
     )
-    if baseline is None:
-        return None, {}
-    wanted = {
-        (MarketSubjectType.role.value, str(snapshot["role_name"]).lower()),
-        (MarketSubjectType.industry.value, str(snapshot["industry_name"]).lower()),
-        *((MarketSubjectType.skill.value, skill.name.lower()) for skill in skills),
+    subjects = [
+        (MarketSubjectType.role, str(snapshot["role_name"])),
+        (MarketSubjectType.industry, str(snapshot["industry_name"])),
+        *((MarketSubjectType.skill, skill.name) for skill in skills),
+    ]
+    coverage: dict[str, object] = {
+        "baseline_version": None,
+        "subject_count": len(subjects),
+        "baseline_signals": 0,
+        "model_estimate_signals": len(subjects),
+        "coverage_percent": "0.00",
     }
+    if baseline is None:
+        return None, {}, coverage
     signals = {
-        (item.subject_type.value, item.subject_name.lower()): item
+        (item.subject_type.value, normalize_subject_name(item.subject_name)): item
         for item in baseline.signals
-        if (item.subject_type.value, item.subject_name.lower()) in wanted
     }
     if not signals:
-        return None, {}
+        return None, {}, coverage
+    matched: dict[tuple[str, str], MarketBaselineSignal] = {}
+    for subject_type, name in subjects:
+        signal = _lookup_signal(signals, subject_type, name)
+        if signal is not None:
+            matched[(subject_type.value, normalize_subject_name(name))] = signal
+    if not matched:
+        return None, {}, coverage
+    total = len(subjects)
+    coverage = {
+        "baseline_version": baseline.version,
+        "subject_count": total,
+        "baseline_signals": len(matched),
+        "model_estimate_signals": total - len(matched),
+        "coverage_percent": str(
+            score(Decimal(len(matched)) / Decimal(total) * 100)
+        ),
+    }
     snapshot["market_baseline"] = {
         "version": baseline.version,
         "summary": baseline.summary,
         "citations": baseline.citations,
+        "coverage": coverage,
         "signals": [
             {
                 "subject_type": item.subject_type.value,
@@ -262,22 +394,21 @@ async def _apply_market_baseline(
                 "classification": item.classification,
                 "rationale": item.rationale,
             }
-            for item in signals.values()
+            for item in matched.values()
         ],
     }
-    return baseline.version, signals
+    return baseline.version, matched, coverage
 
 
 def _pivot_scores(ai_result: CareerAnalysisAIResult) -> list[tuple[object, Decimal]]:
+    """Match score per suggested role, using the shared pivot-match weights."""
     results: list[tuple[object, Decimal]] = []
     for role in ai_result.pivot_roles:
-        match = weighted(
-            [
-                (SIGNAL_SCORES[role.skill_fit.value], Decimal("0.55")),
-                (SIGNAL_SCORES[role.activity_fit.value], Decimal("0.20")),
-                (SIGNAL_SCORES[role.experience_fit.value], Decimal("0.15")),
-                (SIGNAL_SCORES[role.industry_fit.value], Decimal("0.10")),
-            ]
+        match = pivot_match(
+            skill_fit=SIGNAL_SCORES[role.skill_fit.value],
+            activity_fit=SIGNAL_SCORES[role.activity_fit.value],
+            experience_fit=SIGNAL_SCORES[role.experience_fit.value],
+            industry_fit=SIGNAL_SCORES[role.industry_fit.value],
         )
         results.append((role, match))
     return sorted(results, key=lambda item: item[1], reverse=True)
@@ -314,22 +445,30 @@ async def _create_bundle(
     snapshot: dict[str, object],
     ai_result: CareerAnalysisAIResult,
     provider_model: str,
-    financial_score: Decimal,
     data_confidence: Decimal,
     market_baseline_version: str | None,
     market_signals: dict[tuple[str, str], MarketBaselineSignal],
+    market_coverage: dict[str, object],
+    insufficient_data: list[str],
 ) -> CareerAssessmentBundleResponse:
     activity_scores = [
         EXPOSURE_SCORES[activity.exposure.value] for activity in ai_result.activities
     ]
     exposure_score = average(activity_scores)
+    if exposure_score is None:
+        # The provider schema requires at least one activity, so an empty list means the
+        # provider broke its own contract. Fail loudly rather than inventing a score.
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI provider returned no usable activity exposure signals",
+        )
     skill_by_name = {skill.name.lower(): skill for skill in skills}
     matched_skill_results = [
         item for item in ai_result.skills if item.name.lower() in skill_by_name
     ]
     skill_classifications = {
-        item.name.lower(): (
-            market_signals.get((MarketSubjectType.skill.value, item.name.lower()))
+        item.name.lower(): _lookup_signal(
+            market_signals, MarketSubjectType.skill, item.name
         )
         for item in matched_skill_results
     }
@@ -343,13 +482,18 @@ async def _create_bundle(
         ]
     )
     pivots = _pivot_scores(ai_result)
-    mobility_score = pivots[0][1] if pivots else Decimal("0")
+    if not pivots:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI provider returned no pivot roles",
+        )
+    # Highest match score. Used as the mobility component of Career Readiness, so it must
+    # never be a placeholder.
+    mobility_score = pivots[0][1]
 
-    role_signal = market_signals.get(
-        (MarketSubjectType.role.value, str(snapshot["role_name"]).lower())
-    )
-    industry_signal = market_signals.get(
-        (MarketSubjectType.industry.value, str(snapshot["industry_name"]).lower())
+    role_signal = _lookup_signal(market_signals, MarketSubjectType.role, str(snapshot["role_name"]))
+    industry_signal = _lookup_signal(
+        market_signals, MarketSubjectType.industry, str(snapshot["industry_name"])
     )
     market_demand_level = (
         role_signal.classification
@@ -364,28 +508,47 @@ async def _create_bundle(
     market_risk = score(100 - SIGNAL_SCORES[market_demand_level])
     dependency_risk = SIGNAL_SCORES[ai_result.skill_dependency.level.value]
     industry_risk = score(100 - SIGNAL_SCORES[industry_stability_level])
-    overall_risk = weighted(
-        [
-            (exposure_score, Decimal("0.40")),
-            (market_risk, Decimal("0.25")),
-            (dependency_risk, Decimal("0.20")),
-            (industry_risk, Decimal("0.15")),
-        ]
+    overall_risk = career_risk(
+        activity_exposure=exposure_score,
+        market_demand_risk=market_risk,
+        skill_dependency_risk=dependency_risk,
+        industry_volatility_risk=industry_risk,
     )
+    if overall_risk is None:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI provider returned no usable risk signals",
+        )
     performance_score = SIGNAL_SCORES[ai_result.performance_growth.level.value]
     adaptability_score = SIGNAL_SCORES[ai_result.adaptability.level.value]
-    health_score = career_health(
+    # Career Readiness deliberately excludes Financial Readiness: that number is measured
+    # once, in Overall Resilience, so it no longer has two paths into the same score.
+    health_score = career_readiness(
         performance_growth=performance_score,
         skill_relevance=relevance_score,
         adaptability=adaptability_score,
         mobility=mobility_score,
-        financial_readiness_score=financial_score,
+    )
+    if health_score is None:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI provider returned no usable career readiness signals",
+        )
+    # A component that could not be measured lowers Data Confidence instead of being
+    # silently replaced by a plausible-looking default.
+    if insufficient_data:
+        penalty = Decimal("0.2") * Decimal(len(insufficient_data))
+        data_confidence = score(data_confidence * max(Decimal("0"), Decimal("1") - penalty))
+    coverage_value = market_coverage.get("coverage_percent")
+    baseline_coverage_percent = (
+        Decimal(str(coverage_value)) if coverage_value is not None else None
     )
     provenance = {
         "provider": "gemini",
         "model": provider_model,
         "prompt_version": PROMPT_VERSION,
         "scoring_version": SCORE_VERSION,
+        "regulation_version": REGULATION_VERSION,
     }
 
     exposure = AiExposureAssessment(
@@ -450,9 +613,11 @@ async def _create_bundle(
         (
             "market_demand",
             market_risk,
+            # Anything not sourced from the reviewed baseline is labelled as a model
+            # estimate, so the two are never presented as equally grounded.
             role_signal.rationale
             if role_signal is not None
-            else ai_result.market_demand.reason,
+            else _label_model_estimate(ai_result.market_demand.reason),
         ),
         ("skill_dependency", dependency_risk, ai_result.skill_dependency.reason),
         (
@@ -460,7 +625,7 @@ async def _create_bundle(
             industry_risk,
             industry_signal.rationale
             if industry_signal is not None
-            else ai_result.industry_stability.reason,
+            else _label_model_estimate(ai_result.industry_stability.reason),
         ),
     ]
     risk = RiskScan(
@@ -536,7 +701,8 @@ async def _create_bundle(
     missing_skills = await _ensure_skills(db, all_missing)
     pivot_responses: list[PivotRoleResponse] = []
     for role, match in pivots:
-        preparation_months = max(1, min(12, ceil(len(role.missing_skills) * 1.5)))
+        # Shared with the Transition Gap so both features quote the same preparation time.
+        preparation_months = preparation_months_for_gap_count(len(role.missing_skills))
         description = role.reason
         preferred_role = PivotPreferredRole(
             analysis_id=pivot.id,
@@ -572,17 +738,20 @@ async def _create_bundle(
                 )
             )
 
-    health_factor_values = [
+    # Career Readiness only. Financial Readiness is not repeated here; it is a component of
+    # Overall Resilience instead.
+    health_factor_values: list[tuple[str, Decimal, str]] = [
         ("performance_growth", performance_score, ai_result.performance_growth.reason),
-        ("skill_relevance", relevance_score, ai_result.exposure_summary),
         ("adaptability", adaptability_score, ai_result.adaptability.reason),
-        ("mobility", mobility_score, ai_result.pivot_summary),
-        (
-            "financial_readiness",
-            financial_score,
-            "Kemajuan terhadap target runway enam bulan.",
-        ),
     ]
+    if relevance_score is not None:
+        health_factor_values.append(
+            ("skill_relevance", relevance_score, ai_result.exposure_summary)
+        )
+    if mobility_score is not None:
+        health_factor_values.append(
+            ("mobility", mobility_score, ai_result.pivot_summary)
+        )
     health = HealthAssessment(
         user_id=user_id,
         role_name=str(snapshot["role_name"]),
@@ -658,6 +827,8 @@ async def _create_bundle(
             model=provider_model,
             scoring_version=SCORE_VERSION,
             market_baseline_version=market_baseline_version,
+            insufficient_data=list(insufficient_data),
+            baseline_coverage_percent=baseline_coverage_percent,
         ),
         risk=RiskAssessmentResult(
             id=risk.id,
@@ -672,6 +843,8 @@ async def _create_bundle(
             model=provider_model,
             scoring_version=SCORE_VERSION,
             market_baseline_version=market_baseline_version,
+            insufficient_data=list(insufficient_data),
+            baseline_coverage_percent=baseline_coverage_percent,
         ),
         pivot=PivotAssessmentResult(
             id=pivot.id,
@@ -696,6 +869,8 @@ async def _create_bundle(
             model=provider_model,
             scoring_version=SCORE_VERSION,
             market_baseline_version=market_baseline_version,
+            insufficient_data=list(insufficient_data),
+            baseline_coverage_percent=baseline_coverage_percent,
         ),
     )
 
@@ -711,12 +886,13 @@ async def create_career_assessments(
     db: AsyncSession = Depends(get_db),
     provider: StructuredAIProvider = Depends(get_ai_provider),
 ) -> CareerAssessmentBundleResponse:
-    snapshot, skills, financial_score, confidence, _ = await _load_context(
+    snapshot, skills, confidence, _, insufficient_data = await _load_context(
         db, user.id, payload
     )
-    market_baseline_version, market_signals = await _apply_market_baseline(
-        db, snapshot, skills
+    market_baseline_version, market_signals, market_coverage = (
+        await _apply_market_baseline(db, snapshot, skills)
     )
+    snapshot["market_baseline_coverage"] = market_coverage
     try:
         ai_result = await provider.generate_structured(
             response_type=CareerAnalysisAIResult,
@@ -754,10 +930,11 @@ async def create_career_assessments(
         snapshot=snapshot,
         ai_result=ai_result,
         provider_model=provider.model,
-        financial_score=financial_score,
         data_confidence=confidence,
         market_baseline_version=market_baseline_version,
         market_signals=market_signals,
+        market_coverage=market_coverage,
+        insufficient_data=insufficient_data,
     )
 
 
@@ -771,6 +948,24 @@ async def _latest_owned(db: AsyncSession, model, user_id: int, timestamp):
     if item is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
     return item
+
+
+def _snapshot_market_coverage(snapshot: dict | None) -> Decimal | None:
+    """Share of subjects that matched the reviewed baseline, read back from the snapshot."""
+    raw = (snapshot or {}).get("market_baseline_coverage")
+    if not isinstance(raw, dict):
+        return None
+    value = raw.get("coverage_percent")
+    if value is None:
+        return None
+    return Decimal(str(value))
+
+
+def _snapshot_insufficient(snapshot: dict | None) -> list[str]:
+    raw = (snapshot or {}).get("insufficient_data")
+    if not isinstance(raw, list):
+        return []
+    return [str(item) for item in raw]
 
 
 async def _exposure_response(
@@ -802,6 +997,13 @@ async def _exposure_response(
     declining = [
         name for name, item_status in relevance_rows if item_status.value == "declining"
     ]
+    # Rows written before the exit-aware change can hold NULL scores. Report the gap
+    # explicitly rather than letting the client read a zero as a measurement.
+    insufficient = _snapshot_insufficient(assessment.input_snapshot)
+    if assessment.overall_exposure_score is None and "ai_exposure" not in insufficient:
+        insufficient.append("ai_exposure")
+    if assessment.skill_relevance_score is None and "skill_relevance" not in insufficient:
+        insufficient.append("skill_relevance")
     return ExposureAssessmentResult(
         id=assessment.id,
         assessed_at=assessment.assessed_at,
@@ -826,6 +1028,8 @@ async def _exposure_response(
         model=assessment.provider_model or "legacy",
         scoring_version=assessment.scoring_version or "legacy",
         market_baseline_version=assessment.market_baseline_version,
+        insufficient_data=insufficient,
+        baseline_coverage_percent=_snapshot_market_coverage(assessment.input_snapshot),
     )
 
 
@@ -839,6 +1043,9 @@ async def _risk_response(db: AsyncSession, scan: RiskScan) -> RiskAssessmentResu
             )
         ).all()
     )
+    insufficient = _snapshot_insufficient(scan.input_snapshot)
+    if scan.overall_score is None and "career_risk" not in insufficient:
+        insufficient.append("career_risk")
     return RiskAssessmentResult(
         id=scan.id,
         scanned_at=scan.scanned_at,
@@ -861,6 +1068,8 @@ async def _risk_response(db: AsyncSession, scan: RiskScan) -> RiskAssessmentResu
         model=scan.provider_model or "legacy",
         scoring_version=scan.scoring_version or "legacy",
         market_baseline_version=scan.market_baseline_version,
+        insufficient_data=insufficient,
+        baseline_coverage_percent=_snapshot_market_coverage(scan.input_snapshot),
     )
 
 
@@ -923,31 +1132,20 @@ async def _health_response(
             )
         ).all()
     )
-    factor_scores = {item.dimension: item.score for item in factors}
-    financial_profile = await db.scalar(
-        select(FinancialProfile).where(FinancialProfile.user_id == assessment.user_id)
-    )
-    if financial_profile is not None and "financial_readiness" in factor_scores:
-        factor_scores["financial_readiness"] = score(
-            financial_profile.financial_readiness_score
-        )
-    required_dimensions = {
-        "performance_growth",
-        "skill_relevance",
-        "adaptability",
-        "mobility",
-        "financial_readiness",
-    }
+    # Career Readiness dimensions only. A legacy row may still carry a financial_readiness
+    # breakdown, which belonged to the old Career Health formula and is not part of this
+    # score, so it is filtered out rather than shown as a factor.
+    career_factors = [item for item in factors if item.dimension in CAREER_DIMENSIONS]
+    factor_scores = {item.dimension: item.score for item in career_factors}
+    required_dimensions = set(CAREER_DIMENSIONS)
+    # Stored scores are never recomputed with new weights: a historical assessment keeps the
+    # number it was scored with. Only the level is re-derived for display.
     current_score = assessment.overall_score
-    if required_dimensions.issubset(factor_scores):
-        current_score = career_health(
-            performance_growth=factor_scores["performance_growth"],
-            skill_relevance=factor_scores["skill_relevance"],
-            adaptability=factor_scores["adaptability"],
-            mobility=factor_scores["mobility"],
-            financial_readiness_score=factor_scores["financial_readiness"],
-        )
     current_level = health_level(current_score)
+    insufficient = _snapshot_insufficient(assessment.input_snapshot)
+    for dimension in sorted(required_dimensions - set(factor_scores)):
+        if dimension not in insufficient:
+            insufficient.append(dimension)
     return HealthAssessmentResult(
         id=assessment.id,
         assessed_at=assessment.assessed_at,
@@ -960,15 +1158,17 @@ async def _health_response(
             ScoreExplanation(
                 key=item.dimension,
                 title=FACTOR_TITLES.get(item.dimension, item.dimension),
-                score=factor_scores[item.dimension],
-                level=health_level(factor_scores[item.dimension]),
+                score=item.score,
+                level=health_level(item.score),
                 explanation=item.note or "",
             )
-            for item in factors
+            for item in career_factors
         ],
         model=assessment.provider_model or "legacy",
         scoring_version=assessment.scoring_version or "legacy",
         market_baseline_version=assessment.market_baseline_version,
+        insufficient_data=insufficient,
+        baseline_coverage_percent=_snapshot_market_coverage(assessment.input_snapshot),
     )
 
 

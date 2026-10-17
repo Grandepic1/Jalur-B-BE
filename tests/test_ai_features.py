@@ -15,9 +15,10 @@ from app.core.ai import (
 )
 from app.core.config import settings
 from app.core.scoring import (
-    career_health,
+    career_readiness,
     financial_readiness,
     health_level,
+    overall_resilience,
     risk_level,
     weighted,
 )
@@ -36,10 +37,15 @@ from main import app
 
 
 class ScoringTests(TestCase):
-    def test_financial_readiness_matches_six_month_target(self) -> None:
+    def test_financial_readiness_tracks_the_supplied_target(self) -> None:
+        # The target is now passed in per user rather than hardcoded to six months.
         self.assertEqual(
             financial_readiness(Decimal("3.1"), Decimal("6")),
             Decimal("51.67"),
+        )
+        self.assertEqual(
+            financial_readiness(Decimal("3.1"), Decimal("10")),
+            Decimal("31.00"),
         )
 
     def test_weighted_scores_are_bounded_and_rounded(self) -> None:
@@ -57,20 +63,33 @@ class ScoringTests(TestCase):
         self.assertEqual(risk_level(Decimal("40")), "medium")
         self.assertEqual(risk_level(Decimal("70")), "high")
 
-    def test_current_financial_readiness_changes_career_health(self) -> None:
-        common = {
-            "performance_growth": Decimal("80"),
-            "skill_relevance": Decimal("80"),
-            "adaptability": Decimal("80"),
-            "mobility": Decimal("80"),
-        }
+    def test_career_readiness_is_independent_of_financial_readiness(self) -> None:
+        """Regression guard for the double-counting fix.
+
+        Career Readiness previously moved with Financial Readiness (74.00 vs 84.00 for the
+        same career inputs), and Overall Resilience then added the financial number a
+        second time. The career score is now purely career, and the blend is 50/50.
+        """
+        career = career_readiness(
+            performance_growth=Decimal("80"),
+            skill_relevance=Decimal("80"),
+            adaptability=Decimal("80"),
+            mobility=Decimal("80"),
+        )
+        self.assertEqual(career, Decimal("80.00"))
         self.assertEqual(
-            career_health(**common, financial_readiness_score=Decimal("50")),
-            Decimal("74.00"),
+            overall_resilience(
+                career_readiness_score=career,
+                financial_readiness_score=Decimal("50"),
+            ),
+            Decimal("65.00"),
         )
         self.assertEqual(
-            career_health(**common, financial_readiness_score=Decimal("100")),
-            Decimal("84.00"),
+            overall_resilience(
+                career_readiness_score=career,
+                financial_readiness_score=Decimal("100"),
+            ),
+            Decimal("90.00"),
         )
 
 

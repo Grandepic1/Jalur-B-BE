@@ -1,6 +1,19 @@
 # Jalur B — Backend
 
-Career & financial resilience platform: membantu pekerja mempersiapkan diri menghadapi PHK dan perubahan dunia kerja sebelum terjadi. See [Plan.md](Plan.md) for the full product spec and [erd.md](erd.md) for the database design.
+**English summary.** Jalur B is an Indonesian career-resilience platform that helps workers
+prepare for job loss and career change *before* either happens. It scores career readiness
+and financial readiness as separate, non-overlapping numbers; computes an exit-aware
+financial runway that depends on how employment actually ends (resignation, efficiency
+dismissal, PKWT expiry, bankruptcy) including statutory entitlements; and measures the gap
+between that runway and the time a career pivot needs. Stack: FastAPI, SQLAlchemy 2
+(async), PostgreSQL, Alembic, Gemini for bounded classification only.
+
+**Ringkasan.** Platform ketahanan karier dan finansial untuk pekerja Indonesia. Menghitung
+masa aman finansial berdasarkan cara kerja berakhir, lalu membandingkannya dengan waktu
+yang dibutuhkan untuk berpindah karier.
+
+See [AI_SCORING.md](AI_SCORING.md) for the scoring formulas, weight sensitivity analysis,
+and limitations, and [erd.md](erd.md) for the database design.
 
 ## Stack
 
@@ -53,6 +66,8 @@ uv run uvicorn main:app --host 0.0.0.0 --port 8000
 
 ## Deployment and API Documentation
 
+Product site: <https://jalurb.id>
+
 - Production API: <https://jalur-b.fastapicloud.dev>
 - Health check: <https://jalur-b.fastapicloud.dev/health>
 - Swagger UI: <https://jalur-b.fastapicloud.dev/docs>
@@ -92,15 +107,29 @@ alembic/        # migration environment (wired to app settings + Base.metadata)
 main.py         # FastAPI app entrypoint
 ```
 
-## Roadmap (features per Plan.md)
+## Implemented features
 
-1. Career Health Score
+1. Career Readiness (formerly Career Health) — `scoring_version: career-resilience-v2`
 2. Career Risk Scanner
 3. AI Exposure + Skill Relevance
 4. Career Pivot Map
 5. Career Evidence Vault
-6. Personal Runway
-7. What If I Get Fired?
+6. Personal Runway, including the exit-aware runway and statutory entitlements
+7. What If I Get Fired — exit-ground simulation with Transition Gap
+
+Authentication (password + Google OAuth), onboarding, CV import, market-baseline
+governance, master data, missions, and the dashboard are implemented as well.
+
+## In development and roadmap
+
+- Anchoring AI Exposure to an external occupational exposure index instead of the fixed
+  25/55/80 anchors. See `PLOT_HOLES_ARGUMENT.md` for the open question.
+- Matching roles to baseline signals by ISCO-08 code rather than by name.
+- Regulation versioning for a future change to the Manpower Law (the schema already stores
+  `regulation_version` on every exit-runway result, so only the tables would need updating).
+- UU PDP controls for financial data: explicit consent before financial input, a documented
+  retention policy, and a dedicated financial-data deletion action.
+- B-Credits and monetisation. Not implemented.
 
 AI behavior, formulas, score thresholds, and limitations are documented in
 [`AI_SCORING.md`](AI_SCORING.md).
@@ -274,11 +303,28 @@ source of truth for savings; profile settings only store monthly burn inputs.
 - `GET /api/financial/runway/history` returns snapshot history with `limit` and `offset`.
 - `POST /api/financial/runway/preview` evaluates unsaved user-supplied expense scenarios.
 - `GET /api/financial/runway/trend` compares the latest two saved snapshots.
+- `GET`/`PUT /api/financial/employment-terms` stores the wage, PKWT/PKWTT, tenure, and
+  BPJS/JKN facts the statutory entitlements depend on.
+- `POST /api/financial/exit-runway` computes and saves one exit-aware runway.
+- `GET /api/financial/exit-runway/latest` reads the last saved one.
 
-Runway is `liquid assets / (monthly essential expenses + monthly debt payment)`.
+Plain runway is `liquid assets / (monthly essential expenses + monthly debt payment)`.
 Assets marked `requires_process` or `illiquid` remain in total assets but do not count
 toward runway. All assets must match the profile currency; currency changes are rejected
 while assets exist because this API does not perform foreign-exchange conversion.
+
+When employment terms are on file the runway becomes **exit-aware**: the numerator adds the
+statutory lump sum the user is actually entitled to (pesangon, UPMK, PKWT compensation) and
+the runway accounts for the JKP benefit running for six months. `POST /api/financial/exit-runway`
+returns every layer separately — savings only, plus statutory rights, plus JKP, plus JHT —
+with JHT labelled as retirement savings, plus the date the money runs out and the JKP claim
+deadline. Financial Readiness uses this exit-aware runway against the user's personal target
+(the chosen pivot role's preparation time plus the search-time assumption, default three
+months and always user-adjustable), replacing the previous flat six-month target.
+
+A reported essential spend below the national per-capita poverty line returns a
+`cost_of_living_warning`, because under-reporting expenses makes the runway look longer
+than it is.
 
 ## Evidence API
 

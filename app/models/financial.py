@@ -289,9 +289,20 @@ class FinancialRunwayPreview(BaseModel):
     liquid_assets: Decimal
     monthly_burn: Decimal
     financial_runway_months: Decimal
+    # The target used for scoring. It is personal: the chosen pivot role's preparation
+    # time plus the search-time assumption.
     target_runway_months: Decimal
+    # The flat six-month line, kept only as a visual reference and never used as the
+    # scoring denominator.
+    reference_runway_months: Decimal
+    # Why the target is what it is, so the number is never unexplained.
+    target_basis: str
     runway_gap_months: Decimal
     currency: str
+    # Set when the reported essential spend is too low to be plausible, which would make
+    # the runway look longer than it is.
+    cost_of_living_warning: str | None = None
+    poverty_line_version: str | None = None
 
 
 class FinancialSummaryResponse(BaseModel):

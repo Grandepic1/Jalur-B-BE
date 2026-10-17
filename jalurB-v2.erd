@@ -67,7 +67,10 @@
       "t-runway-calculations",
       "t-skill-missions",
       "t-layoff-simulations",
-      "t-simulation-action-items"
+      "t-simulation-action-items",
+      "t-employment-terms",
+      "t-exit-runway-calculations",
+      "t-simulation-role-transitions"
     ],
     "relationshipIds": [
       "r-industries-roles-industry-id",
@@ -1425,6 +1428,12 @@
           "c-layoff-simulations-target-runway-months",
           "c-layoff-simulations-financial-gap",
           "c-layoff-simulations-estimated-preparation-time-months",
+          "c-layoff-simulations-exit-type",
+          "c-layoff-simulations-regulation-version",
+          "c-layoff-simulations-search-time-months",
+          "c-layoff-simulations-transition-role-name",
+          "c-layoff-simulations-transition-gap-months",
+          "c-layoff-simulations-transition-gap-status",
           "c-layoff-simulations-evidence-count",
           "c-layoff-simulations-summary",
           "c-layoff-simulations-provider-model",
@@ -1447,6 +1456,12 @@
           "c-layoff-simulations-target-runway-months",
           "c-layoff-simulations-financial-gap",
           "c-layoff-simulations-estimated-preparation-time-months",
+          "c-layoff-simulations-exit-type",
+          "c-layoff-simulations-regulation-version",
+          "c-layoff-simulations-search-time-months",
+          "c-layoff-simulations-transition-role-name",
+          "c-layoff-simulations-transition-gap-months",
+          "c-layoff-simulations-transition-gap-status",
           "c-layoff-simulations-evidence-count",
           "c-layoff-simulations-summary",
           "c-layoff-simulations-provider-model",
@@ -1503,6 +1518,191 @@
         "meta": {
           "updateAt": 1788803056125,
           "createAt": 1788803056125
+        }
+      },
+      "t-employment-terms": {
+        "id": "t-employment-terms",
+        "name": "employment_terms",
+        "comment": "",
+        "columnIds": [
+          "c-employment-terms-id",
+          "c-employment-terms-user-id",
+          "c-employment-terms-monthly-wage-base",
+          "c-employment-terms-employment-type",
+          "c-employment-terms-assumed-exit-type",
+          "c-employment-terms-contract-start-date",
+          "c-employment-terms-contract-end-date",
+          "c-employment-terms-tenure-months",
+          "c-employment-terms-bpjs-tk-active",
+          "c-employment-terms-jkn-active",
+          "c-employment-terms-bpjs-contribution-months-last-24",
+          "c-employment-terms-bpjs-consecutive-months",
+          "c-employment-terms-age-years",
+          "c-employment-terms-jht-balance",
+          "c-employment-terms-unused-leave-days",
+          "c-employment-terms-updated-at"
+        ],
+        "seqColumnIds": [
+          "c-employment-terms-id",
+          "c-employment-terms-user-id",
+          "c-employment-terms-monthly-wage-base",
+          "c-employment-terms-employment-type",
+          "c-employment-terms-assumed-exit-type",
+          "c-employment-terms-contract-start-date",
+          "c-employment-terms-contract-end-date",
+          "c-employment-terms-tenure-months",
+          "c-employment-terms-bpjs-tk-active",
+          "c-employment-terms-jkn-active",
+          "c-employment-terms-bpjs-contribution-months-last-24",
+          "c-employment-terms-bpjs-consecutive-months",
+          "c-employment-terms-age-years",
+          "c-employment-terms-jht-balance",
+          "c-employment-terms-unused-leave-days",
+          "c-employment-terms-updated-at"
+        ],
+        "ui": {
+          "x": 200.0,
+          "y": 5580.0,
+          "zIndex": 2,
+          "widthName": 90,
+          "widthComment": 248,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "t-exit-runway-calculations": {
+        "id": "t-exit-runway-calculations",
+        "name": "exit_runway_calculations",
+        "comment": "",
+        "columnIds": [
+          "c-exit-runway-calculations-id",
+          "c-exit-runway-calculations-user-id",
+          "c-exit-runway-calculations-exit-type",
+          "c-exit-runway-calculations-employment-type",
+          "c-exit-runway-calculations-regulation-version",
+          "c-exit-runway-calculations-monthly-wage-base-snapshot",
+          "c-exit-runway-calculations-tenure-months-snapshot",
+          "c-exit-runway-calculations-essential-expenses-snapshot",
+          "c-exit-runway-calculations-debt-payment-snapshot",
+          "c-exit-runway-calculations-liquid-assets-snapshot",
+          "c-exit-runway-calculations-jht-balance-snapshot",
+          "c-exit-runway-calculations-currency-snapshot",
+          "c-exit-runway-calculations-pesangon-months",
+          "c-exit-runway-calculations-upmk-months",
+          "c-exit-runway-calculations-gross-lump-sum",
+          "c-exit-runway-calculations-severance-tax",
+          "c-exit-runway-calculations-net-lump-sum",
+          "c-exit-runway-calculations-normative-collectable",
+          "c-exit-runway-calculations-liquid-normative",
+          "c-exit-runway-calculations-jkp-eligible",
+          "c-exit-runway-calculations-jkp-monthly-benefit",
+          "c-exit-runway-calculations-jkp-months",
+          "c-exit-runway-calculations-jkp-ineligible-reasons",
+          "c-exit-runway-calculations-savings-only-runway-months",
+          "c-exit-runway-calculations-with-normative-rights-runway-months",
+          "c-exit-runway-calculations-with-jkp-runway-months",
+          "c-exit-runway-calculations-with-jht-runway-months",
+          "c-exit-runway-calculations-day-of-layoff",
+          "c-exit-runway-calculations-money-runs-out-on",
+          "c-exit-runway-calculations-jkp-claim-deadline",
+          "c-exit-runway-calculations-cost-of-living-warning",
+          "c-exit-runway-calculations-notes",
+          "c-exit-runway-calculations-calculated-at"
+        ],
+        "seqColumnIds": [
+          "c-exit-runway-calculations-id",
+          "c-exit-runway-calculations-user-id",
+          "c-exit-runway-calculations-exit-type",
+          "c-exit-runway-calculations-employment-type",
+          "c-exit-runway-calculations-regulation-version",
+          "c-exit-runway-calculations-monthly-wage-base-snapshot",
+          "c-exit-runway-calculations-tenure-months-snapshot",
+          "c-exit-runway-calculations-essential-expenses-snapshot",
+          "c-exit-runway-calculations-debt-payment-snapshot",
+          "c-exit-runway-calculations-liquid-assets-snapshot",
+          "c-exit-runway-calculations-jht-balance-snapshot",
+          "c-exit-runway-calculations-currency-snapshot",
+          "c-exit-runway-calculations-pesangon-months",
+          "c-exit-runway-calculations-upmk-months",
+          "c-exit-runway-calculations-gross-lump-sum",
+          "c-exit-runway-calculations-severance-tax",
+          "c-exit-runway-calculations-net-lump-sum",
+          "c-exit-runway-calculations-normative-collectable",
+          "c-exit-runway-calculations-liquid-normative",
+          "c-exit-runway-calculations-jkp-eligible",
+          "c-exit-runway-calculations-jkp-monthly-benefit",
+          "c-exit-runway-calculations-jkp-months",
+          "c-exit-runway-calculations-jkp-ineligible-reasons",
+          "c-exit-runway-calculations-savings-only-runway-months",
+          "c-exit-runway-calculations-with-normative-rights-runway-months",
+          "c-exit-runway-calculations-with-jkp-runway-months",
+          "c-exit-runway-calculations-with-jht-runway-months",
+          "c-exit-runway-calculations-day-of-layoff",
+          "c-exit-runway-calculations-money-runs-out-on",
+          "c-exit-runway-calculations-jkp-claim-deadline",
+          "c-exit-runway-calculations-cost-of-living-warning",
+          "c-exit-runway-calculations-notes",
+          "c-exit-runway-calculations-calculated-at"
+        ],
+        "ui": {
+          "x": 900.0,
+          "y": 5580.0,
+          "zIndex": 2,
+          "widthName": 90,
+          "widthComment": 248,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "t-simulation-role-transitions": {
+        "id": "t-simulation-role-transitions",
+        "name": "simulation_role_transitions",
+        "comment": "",
+        "columnIds": [
+          "c-simulation-role-transitions-id",
+          "c-simulation-role-transitions-simulation-id",
+          "c-simulation-role-transitions-role-name",
+          "c-simulation-role-transitions-match-score",
+          "c-simulation-role-transitions-preparation-time-months",
+          "c-simulation-role-transitions-search-time-months",
+          "c-simulation-role-transitions-transition-months",
+          "c-simulation-role-transitions-transition-gap-months",
+          "c-simulation-role-transitions-status",
+          "c-simulation-role-transitions-recommended-monthly-saving",
+          "c-simulation-role-transitions-months-saved-by-closing-one-gap",
+          "c-simulation-role-transitions-note"
+        ],
+        "seqColumnIds": [
+          "c-simulation-role-transitions-id",
+          "c-simulation-role-transitions-simulation-id",
+          "c-simulation-role-transitions-role-name",
+          "c-simulation-role-transitions-match-score",
+          "c-simulation-role-transitions-preparation-time-months",
+          "c-simulation-role-transitions-search-time-months",
+          "c-simulation-role-transitions-transition-months",
+          "c-simulation-role-transitions-transition-gap-months",
+          "c-simulation-role-transitions-status",
+          "c-simulation-role-transitions-recommended-monthly-saving",
+          "c-simulation-role-transitions-months-saved-by-closing-one-gap",
+          "c-simulation-role-transitions-note"
+        ],
+        "ui": {
+          "x": 1600.0,
+          "y": 5580.0,
+          "zIndex": 2,
+          "widthName": 90,
+          "widthComment": 248,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
         }
       }
     },
@@ -7786,6 +7986,1346 @@
           "updateAt": 1788803056125,
           "createAt": 1788803056125
         }
+      },
+      "c-layoff-simulations-exit-type": {
+        "id": "c-layoff-simulations-exit-type",
+        "tableId": "t-layoff-simulations",
+        "name": "exit_type",
+        "comment": "",
+        "dataType": "ENUM('efficiency_prevent_loss','efficiency_due_to_loss','closure_not_loss','bankruptcy','pkwt_ends_on_schedule','resign')",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-layoff-simulations-regulation-version": {
+        "id": "c-layoff-simulations-regulation-version",
+        "tableId": "t-layoff-simulations",
+        "name": "regulation_version",
+        "comment": "",
+        "dataType": "VARCHAR(64)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-layoff-simulations-search-time-months": {
+        "id": "c-layoff-simulations-search-time-months",
+        "tableId": "t-layoff-simulations",
+        "name": "search_time_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-layoff-simulations-transition-role-name": {
+        "id": "c-layoff-simulations-transition-role-name",
+        "tableId": "t-layoff-simulations",
+        "name": "transition_role_name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-layoff-simulations-transition-gap-months": {
+        "id": "c-layoff-simulations-transition-gap-months",
+        "tableId": "t-layoff-simulations",
+        "name": "transition_gap_months",
+        "comment": "",
+        "dataType": "DECIMAL(8,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-layoff-simulations-transition-gap-status": {
+        "id": "c-layoff-simulations-transition-gap-status",
+        "tableId": "t-layoff-simulations",
+        "name": "transition_gap_status",
+        "comment": "",
+        "dataType": "VARCHAR(20)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-id": {
+        "id": "c-employment-terms-id",
+        "tableId": "t-employment-terms",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 3,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-user-id": {
+        "id": "c-employment-terms-user-id",
+        "tableId": "t-employment-terms",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-monthly-wage-base": {
+        "id": "c-employment-terms-monthly-wage-base",
+        "tableId": "t-employment-terms",
+        "name": "monthly_wage_base",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-employment-type": {
+        "id": "c-employment-terms-employment-type",
+        "tableId": "t-employment-terms",
+        "name": "employment_type",
+        "comment": "",
+        "dataType": "ENUM('pkwtt','pkwt')",
+        "default": "'pkwtt'",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-assumed-exit-type": {
+        "id": "c-employment-terms-assumed-exit-type",
+        "tableId": "t-employment-terms",
+        "name": "assumed_exit_type",
+        "comment": "",
+        "dataType": "ENUM('efficiency_prevent_loss','efficiency_due_to_loss','closure_not_loss','bankruptcy','pkwt_ends_on_schedule','resign')",
+        "default": "'efficiency_due_to_loss'",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-contract-start-date": {
+        "id": "c-employment-terms-contract-start-date",
+        "tableId": "t-employment-terms",
+        "name": "contract_start_date",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-contract-end-date": {
+        "id": "c-employment-terms-contract-end-date",
+        "tableId": "t-employment-terms",
+        "name": "contract_end_date",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-tenure-months": {
+        "id": "c-employment-terms-tenure-months",
+        "tableId": "t-employment-terms",
+        "name": "tenure_months",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-bpjs-tk-active": {
+        "id": "c-employment-terms-bpjs-tk-active",
+        "tableId": "t-employment-terms",
+        "name": "bpjs_tk_active",
+        "comment": "",
+        "dataType": "BOOLEAN",
+        "default": "FALSE",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-jkn-active": {
+        "id": "c-employment-terms-jkn-active",
+        "tableId": "t-employment-terms",
+        "name": "jkn_active",
+        "comment": "",
+        "dataType": "BOOLEAN",
+        "default": "FALSE",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-bpjs-contribution-months-last-24": {
+        "id": "c-employment-terms-bpjs-contribution-months-last-24",
+        "tableId": "t-employment-terms",
+        "name": "bpjs_contribution_months_last_24",
+        "comment": "",
+        "dataType": "INT",
+        "default": "0",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-bpjs-consecutive-months": {
+        "id": "c-employment-terms-bpjs-consecutive-months",
+        "tableId": "t-employment-terms",
+        "name": "bpjs_consecutive_months",
+        "comment": "",
+        "dataType": "INT",
+        "default": "0",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-age-years": {
+        "id": "c-employment-terms-age-years",
+        "tableId": "t-employment-terms",
+        "name": "age_years",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-jht-balance": {
+        "id": "c-employment-terms-jht-balance",
+        "tableId": "t-employment-terms",
+        "name": "jht_balance",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-unused-leave-days": {
+        "id": "c-employment-terms-unused-leave-days",
+        "tableId": "t-employment-terms",
+        "name": "unused_leave_days",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-employment-terms-updated-at": {
+        "id": "c-employment-terms-updated-at",
+        "tableId": "t-employment-terms",
+        "name": "updated_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-id": {
+        "id": "c-exit-runway-calculations-id",
+        "tableId": "t-exit-runway-calculations",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 3,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-user-id": {
+        "id": "c-exit-runway-calculations-user-id",
+        "tableId": "t-exit-runway-calculations",
+        "name": "user_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-exit-type": {
+        "id": "c-exit-runway-calculations-exit-type",
+        "tableId": "t-exit-runway-calculations",
+        "name": "exit_type",
+        "comment": "",
+        "dataType": "ENUM('efficiency_prevent_loss','efficiency_due_to_loss','closure_not_loss','bankruptcy','pkwt_ends_on_schedule','resign')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-employment-type": {
+        "id": "c-exit-runway-calculations-employment-type",
+        "tableId": "t-exit-runway-calculations",
+        "name": "employment_type",
+        "comment": "",
+        "dataType": "ENUM('pkwtt','pkwt')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-regulation-version": {
+        "id": "c-exit-runway-calculations-regulation-version",
+        "tableId": "t-exit-runway-calculations",
+        "name": "regulation_version",
+        "comment": "",
+        "dataType": "VARCHAR(64)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-monthly-wage-base-snapshot": {
+        "id": "c-exit-runway-calculations-monthly-wage-base-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "monthly_wage_base_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-tenure-months-snapshot": {
+        "id": "c-exit-runway-calculations-tenure-months-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "tenure_months_snapshot",
+        "comment": "",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-essential-expenses-snapshot": {
+        "id": "c-exit-runway-calculations-essential-expenses-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "essential_expenses_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-debt-payment-snapshot": {
+        "id": "c-exit-runway-calculations-debt-payment-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "debt_payment_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-liquid-assets-snapshot": {
+        "id": "c-exit-runway-calculations-liquid-assets-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "liquid_assets_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jht-balance-snapshot": {
+        "id": "c-exit-runway-calculations-jht-balance-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jht_balance_snapshot",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-currency-snapshot": {
+        "id": "c-exit-runway-calculations-currency-snapshot",
+        "tableId": "t-exit-runway-calculations",
+        "name": "currency_snapshot",
+        "comment": "",
+        "dataType": "VARCHAR(3)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-pesangon-months": {
+        "id": "c-exit-runway-calculations-pesangon-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "pesangon_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-upmk-months": {
+        "id": "c-exit-runway-calculations-upmk-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "upmk_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-gross-lump-sum": {
+        "id": "c-exit-runway-calculations-gross-lump-sum",
+        "tableId": "t-exit-runway-calculations",
+        "name": "gross_lump_sum",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-severance-tax": {
+        "id": "c-exit-runway-calculations-severance-tax",
+        "tableId": "t-exit-runway-calculations",
+        "name": "severance_tax",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-net-lump-sum": {
+        "id": "c-exit-runway-calculations-net-lump-sum",
+        "tableId": "t-exit-runway-calculations",
+        "name": "net_lump_sum",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-normative-collectable": {
+        "id": "c-exit-runway-calculations-normative-collectable",
+        "tableId": "t-exit-runway-calculations",
+        "name": "normative_collectable",
+        "comment": "",
+        "dataType": "BOOLEAN",
+        "default": "TRUE",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-liquid-normative": {
+        "id": "c-exit-runway-calculations-liquid-normative",
+        "tableId": "t-exit-runway-calculations",
+        "name": "liquid_normative",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jkp-eligible": {
+        "id": "c-exit-runway-calculations-jkp-eligible",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jkp_eligible",
+        "comment": "",
+        "dataType": "BOOLEAN",
+        "default": "FALSE",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jkp-monthly-benefit": {
+        "id": "c-exit-runway-calculations-jkp-monthly-benefit",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jkp_monthly_benefit",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jkp-months": {
+        "id": "c-exit-runway-calculations-jkp-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jkp_months",
+        "comment": "",
+        "dataType": "INT",
+        "default": "0",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jkp-ineligible-reasons": {
+        "id": "c-exit-runway-calculations-jkp-ineligible-reasons",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jkp_ineligible_reasons",
+        "comment": "",
+        "dataType": "JSON",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-savings-only-runway-months": {
+        "id": "c-exit-runway-calculations-savings-only-runway-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "savings_only_runway_months",
+        "comment": "",
+        "dataType": "DECIMAL(12,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-with-normative-rights-runway-months": {
+        "id": "c-exit-runway-calculations-with-normative-rights-runway-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "with_normative_rights_runway_months",
+        "comment": "",
+        "dataType": "DECIMAL(12,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-with-jkp-runway-months": {
+        "id": "c-exit-runway-calculations-with-jkp-runway-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "with_jkp_runway_months",
+        "comment": "",
+        "dataType": "DECIMAL(12,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-with-jht-runway-months": {
+        "id": "c-exit-runway-calculations-with-jht-runway-months",
+        "tableId": "t-exit-runway-calculations",
+        "name": "with_jht_runway_months",
+        "comment": "",
+        "dataType": "DECIMAL(12,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-day-of-layoff": {
+        "id": "c-exit-runway-calculations-day-of-layoff",
+        "tableId": "t-exit-runway-calculations",
+        "name": "day_of_layoff",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-money-runs-out-on": {
+        "id": "c-exit-runway-calculations-money-runs-out-on",
+        "tableId": "t-exit-runway-calculations",
+        "name": "money_runs_out_on",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-jkp-claim-deadline": {
+        "id": "c-exit-runway-calculations-jkp-claim-deadline",
+        "tableId": "t-exit-runway-calculations",
+        "name": "jkp_claim_deadline",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-cost-of-living-warning": {
+        "id": "c-exit-runway-calculations-cost-of-living-warning",
+        "tableId": "t-exit-runway-calculations",
+        "name": "cost_of_living_warning",
+        "comment": "",
+        "dataType": "VARCHAR(500)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-notes": {
+        "id": "c-exit-runway-calculations-notes",
+        "tableId": "t-exit-runway-calculations",
+        "name": "notes",
+        "comment": "",
+        "dataType": "JSON",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-exit-runway-calculations-calculated-at": {
+        "id": "c-exit-runway-calculations-calculated-at",
+        "tableId": "t-exit-runway-calculations",
+        "name": "calculated_at",
+        "comment": "",
+        "dataType": "TIMESTAMP",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-id": {
+        "id": "c-simulation-role-transitions-id",
+        "tableId": "t-simulation-role-transitions",
+        "name": "id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 3,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-simulation-id": {
+        "id": "c-simulation-role-transitions-simulation-id",
+        "tableId": "t-simulation-role-transitions",
+        "name": "simulation_id",
+        "comment": "",
+        "dataType": "BIGINT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-role-name": {
+        "id": "c-simulation-role-transitions-role-name",
+        "tableId": "t-simulation-role-transitions",
+        "name": "role_name",
+        "comment": "",
+        "dataType": "VARCHAR(100)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-match-score": {
+        "id": "c-simulation-role-transitions-match-score",
+        "tableId": "t-simulation-role-transitions",
+        "name": "match_score",
+        "comment": "",
+        "dataType": "DECIMAL(5,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-preparation-time-months": {
+        "id": "c-simulation-role-transitions-preparation-time-months",
+        "tableId": "t-simulation-role-transitions",
+        "name": "preparation_time_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-search-time-months": {
+        "id": "c-simulation-role-transitions-search-time-months",
+        "tableId": "t-simulation-role-transitions",
+        "name": "search_time_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-transition-months": {
+        "id": "c-simulation-role-transitions-transition-months",
+        "tableId": "t-simulation-role-transitions",
+        "name": "transition_months",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-transition-gap-months": {
+        "id": "c-simulation-role-transitions-transition-gap-months",
+        "tableId": "t-simulation-role-transitions",
+        "name": "transition_gap_months",
+        "comment": "",
+        "dataType": "DECIMAL(8,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-status": {
+        "id": "c-simulation-role-transitions-status",
+        "tableId": "t-simulation-role-transitions",
+        "name": "status",
+        "comment": "",
+        "dataType": "ENUM('surplus','deficit')",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-recommended-monthly-saving": {
+        "id": "c-simulation-role-transitions-recommended-monthly-saving",
+        "tableId": "t-simulation-role-transitions",
+        "name": "recommended_monthly_saving",
+        "comment": "",
+        "dataType": "DECIMAL(15,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-months-saved-by-closing-one-gap": {
+        "id": "c-simulation-role-transitions-months-saved-by-closing-one-gap",
+        "tableId": "t-simulation-role-transitions",
+        "name": "months_saved_by_closing_one_gap",
+        "comment": "",
+        "dataType": "DECIMAL(6,2)",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "c-simulation-role-transitions-note": {
+        "id": "c-simulation-role-transitions-note",
+        "tableId": "t-simulation-role-transitions",
+        "name": "note",
+        "comment": "",
+        "dataType": "VARCHAR(None)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
       }
     },
     "relationshipEntities": {
@@ -8964,6 +10504,90 @@
           "updateAt": 1788803056125,
           "createAt": 1788803056125
         }
+      },
+      "r-users-employment-terms-user-id": {
+        "id": "r-users-employment-terms-user-id",
+        "identification": false,
+        "relationshipType": 2,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-users-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-employment-terms",
+          "columnIds": [
+            "c-employment-terms-user-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "r-users-exit-runway-calculations-user-id": {
+        "id": "r-users-exit-runway-calculations-user-id",
+        "identification": false,
+        "relationshipType": 2,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-users",
+          "columnIds": [
+            "c-users-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-exit-runway-calculations",
+          "columnIds": [
+            "c-exit-runway-calculations-user-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "r-layoff-simulations-simulation-role-transitions-simulation-id": {
+        "id": "r-layoff-simulations-simulation-role-transitions-simulation-id",
+        "identification": false,
+        "relationshipType": 2,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "t-layoff-simulations",
+          "columnIds": [
+            "c-layoff-simulations-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "t-simulation-role-transitions",
+          "columnIds": [
+            "c-simulation-role-transitions-simulation-id"
+          ],
+          "x": 0,
+          "y": 0,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
       }
     },
     "indexEntities": {
@@ -9393,6 +11017,76 @@
         "meta": {
           "updateAt": 1788803056125,
           "createAt": 1788803056125
+        }
+      },
+      "i-ix-exit-runway-calculations-user-calculated": {
+        "id": "i-ix-exit-runway-calculations-user-calculated",
+        "name": "ix_exit_runway_calculations_user_calculated",
+        "tableId": "t-exit-runway-calculations",
+        "indexColumnIds": [
+          "i-ix-exit-runway-calculations-user-calculated-c1",
+          "i-ix-exit-runway-calculations-user-calculated-c2",
+          "i-ix-exit-runway-calculations-user-calculated-c3"
+        ],
+        "seqIndexColumnIds": [
+          "i-ix-exit-runway-calculations-user-calculated-c1",
+          "i-ix-exit-runway-calculations-user-calculated-c2",
+          "i-ix-exit-runway-calculations-user-calculated-c3"
+        ],
+        "unique": false,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-exit-runway-calculations-user-id": {
+        "id": "i-ix-exit-runway-calculations-user-id",
+        "name": "ix_exit_runway_calculations_user_id",
+        "tableId": "t-exit-runway-calculations",
+        "indexColumnIds": [
+          "i-ix-exit-runway-calculations-user-id-c1"
+        ],
+        "seqIndexColumnIds": [
+          "i-ix-exit-runway-calculations-user-id-c1"
+        ],
+        "unique": false,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-simulation-role-transitions-simulation-id": {
+        "id": "i-ix-simulation-role-transitions-simulation-id",
+        "name": "ix_simulation_role_transitions_simulation_id",
+        "tableId": "t-simulation-role-transitions",
+        "indexColumnIds": [
+          "i-ix-simulation-role-transitions-simulation-id-c1"
+        ],
+        "seqIndexColumnIds": [
+          "i-ix-simulation-role-transitions-simulation-id-c1"
+        ],
+        "unique": false,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-uq-simulation-role-transition": {
+        "id": "i-uq-simulation-role-transition",
+        "name": "uq_simulation_role_transition",
+        "tableId": "t-simulation-role-transitions",
+        "indexColumnIds": [
+          "i-uq-simulation-role-transition-c1",
+          "i-uq-simulation-role-transition-c2"
+        ],
+        "seqIndexColumnIds": [
+          "i-uq-simulation-role-transition-c1",
+          "i-uq-simulation-role-transition-c2"
+        ],
+        "unique": true,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
         }
       }
     },
@@ -9925,6 +11619,76 @@
         "meta": {
           "updateAt": 1788803056125,
           "createAt": 1788803056125
+        }
+      },
+      "i-ix-exit-runway-calculations-user-calculated-c1": {
+        "id": "i-ix-exit-runway-calculations-user-calculated-c1",
+        "indexId": "i-ix-exit-runway-calculations-user-calculated",
+        "columnId": "c-exit-runway-calculations-user-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-exit-runway-calculations-user-calculated-c2": {
+        "id": "i-ix-exit-runway-calculations-user-calculated-c2",
+        "indexId": "i-ix-exit-runway-calculations-user-calculated",
+        "columnId": "c-exit-runway-calculations-calculated-at",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-exit-runway-calculations-user-calculated-c3": {
+        "id": "i-ix-exit-runway-calculations-user-calculated-c3",
+        "indexId": "i-ix-exit-runway-calculations-user-calculated",
+        "columnId": "c-exit-runway-calculations-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-exit-runway-calculations-user-id-c1": {
+        "id": "i-ix-exit-runway-calculations-user-id-c1",
+        "indexId": "i-ix-exit-runway-calculations-user-id",
+        "columnId": "c-exit-runway-calculations-user-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-ix-simulation-role-transitions-simulation-id-c1": {
+        "id": "i-ix-simulation-role-transitions-simulation-id-c1",
+        "indexId": "i-ix-simulation-role-transitions-simulation-id",
+        "columnId": "c-simulation-role-transitions-simulation-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-uq-simulation-role-transition-c1": {
+        "id": "i-uq-simulation-role-transition-c1",
+        "indexId": "i-uq-simulation-role-transition",
+        "columnId": "c-simulation-role-transitions-simulation-id",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
+        }
+      },
+      "i-uq-simulation-role-transition-c2": {
+        "id": "i-uq-simulation-role-transition-c2",
+        "indexId": "i-uq-simulation-role-transition",
+        "columnId": "c-simulation-role-transitions-role-name",
+        "orderType": 1,
+        "meta": {
+          "updateAt": 1791961351979,
+          "createAt": 1791961351979
         }
       }
     },

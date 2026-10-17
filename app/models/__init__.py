@@ -32,6 +32,7 @@ from app.models.market_baseline import MarketBaseline, MarketBaselineSignal
 
 # ── F6: Personal Runway ─────────────────────────────────────────────
 from app.models.financial import FinancialAsset, FinancialProfile, RunwayCalculation
+from app.models.employment import EmploymentTerms, ExitRunwayCalculation
 
 # ── F7: What If I Get Fired ─────────────────────────────────────────
 from app.models.layoff import LayoffSimulation, SimulationActionItem
@@ -81,6 +82,8 @@ __all__ = [
     "FinancialProfile",
     "FinancialAsset",
     "RunwayCalculation",
+    "EmploymentTerms",
+    "ExitRunwayCalculation",
     # F7
     "LayoffSimulation",
     "SimulationActionItem",
