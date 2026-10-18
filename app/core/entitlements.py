@@ -8,10 +8,11 @@ Regulation basis
 ----------------
 * ``PP 35/2021`` Art. 40(2) — severance (pesangon) months of wage by tenure.
 * ``PP 35/2021`` Art. 40(3) — long-service award (UPMK) months of wage by tenure.
-* ``PP 35/2021`` Art. 41 read with ``PP 37/2021`` as amended by ``PP 6/2025`` — the
-  multiplier applied to pesangon and UPMK for each ground of termination.
+* ``PP 35/2021`` Art. 41 — the multiplier applied to pesangon and UPMK for each ground
+  of termination.
 * ``PP 68/2009`` — final PPh 21 on severance paid as a lump sum.
-* ``PP 6/2025`` — JKP (Jaminan Kehilangan Pekerjaan) eligibility and cash benefit.
+* ``PP 37/2021`` as amended by ``PP 6/2025`` — JKP (Jaminan Kehilangan Pekerjaan)
+  eligibility and cash benefit.
 
 ``REGULATION_VERSION`` is stored on every exit-runway result so that if these tables
 change (for example once the new Manpower Law replacing UU 13/2003 takes effect) old
@@ -76,7 +77,7 @@ class ExitRules:
     note: str = ""
 
 
-# PP 35/2021 Art. 41 (as amended by PP 6/2025).
+# PP 35/2021 Art. 41.
 EXIT_RULES: dict[ExitType, ExitRules] = {
     ExitType.efficiency_prevent_loss: ExitRules(
         pesangon_multiplier=Decimal("1.0"),
@@ -317,11 +318,16 @@ def severance_final_tax(gross_lump_sum: Decimal) -> Decimal:
 # ─── PKWT compensation ───────────────────────────────────────────────
 
 
-def pkwt_compensation(monthly_wage: Decimal, months_worked: int) -> Decimal:
-    """PKWT compensation: (months worked / 12) x monthly wage (PP 35/2021 Art. 16)."""
-    if months_worked < 0:
-        raise ValueError("months_worked cannot be negative")
-    return (Decimal(months_worked) / MONTHS_PER_YEAR * monthly_wage).quantize(
+def pkwt_compensation(monthly_wage: Decimal, months: int) -> Decimal:
+    """PKWT compensation: (contract duration in months / 12) x monthly wage.
+
+    The duration is the contract that is ending (see ``ExitTerms.contract_months``), not
+    total service. A renewed PKWT is compensated for the running contract, whose earlier
+    terms were settled when they ended.
+    """
+    if months < 0:
+        raise ValueError("months cannot be negative")
+    return (Decimal(months) / MONTHS_PER_YEAR * monthly_wage).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
 
@@ -336,6 +342,11 @@ class ExitTerms:
     exit_type: ExitType
     monthly_wage_base: Decimal
     tenure_months: int
+    # Duration of the contract that is currently ending. Used only for PKWT compensation,
+    # which covers the running contract rather than total service; ``tenure_months`` stays
+    # the basis for pesangon and UPMK. ``None`` falls back to ``tenure_months`` so callers
+    # without contract dates keep the previous behaviour.
+    contract_months: int | None = None
     employment_type: EmploymentType = EmploymentType.pkwtt
     bpjs_tk_active: bool = False
     bpjs_contributions_last_24_months: int = 0
@@ -381,12 +392,16 @@ def compute_exit_entitlements(terms: ExitTerms) -> ExitEntitlements:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
     if rules.pays_pkwt_compensation:
-        compensation = pkwt_compensation(
-            terms.monthly_wage_base, terms.tenure_months
+        compensation_months = (
+            terms.contract_months
+            if terms.contract_months is not None
+            else terms.tenure_months
         )
+        compensation = pkwt_compensation(terms.monthly_wage_base, compensation_months)
         gross += compensation
         notes = [
-            "Kompensasi PKWT dihitung sebagai (bulan kerja / 12) x upah, tanpa JKP.",
+            "Kompensasi PKWT dihitung sebagai (durasi kontrak berjalan / 12) x upah, "
+            "tanpa JKP.",
         ]
     else:
         notes = [rules.note]
@@ -562,6 +577,26 @@ def runway_layers(
 # release before submission: the value below is the September 2024 national figure.
 BPS_POVERTY_LINE_PER_CAPITA = Decimal("595242")
 BPS_POVERTY_LINE_VERSION = "bps-2024-09"
+
+
+def months_between(start: date, end: date) -> int:
+    """Whole calendar months from ``start`` to ``end`` (floor, never negative).
+
+    Used to measure the length of the PKWT that is currently ending.
+    """
+    if end <= start:
+        return 0
+    months = (end.year - start.year) * 12 + (end.month - start.month)
+    if end.day < start.day:
+        months -= 1
+    return max(months, 0)
+
+
+def contract_duration_months(start: date | None, end: date | None) -> int | None:
+    """Whole months covered by a PKWT, or ``None`` when either bound is missing."""
+    if start is None or end is None:
+        return None
+    return months_between(start, end)
 
 
 def add_months(start: date, months: Decimal) -> date:

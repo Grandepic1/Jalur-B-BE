@@ -304,12 +304,16 @@ class SimulationAIResult(BaseModel):
 
 
 class LayoffSimulationRequest(BaseModel):
-    """The exit ground drives the numbers; the search time is a visible assumption."""
+    """The exit ground drives the numbers; these are the visible planning assumptions."""
 
     exit_type: ExitType = ExitType.efficiency_due_to_loss
     # Overrides the bankruptcy conservatism default. ``None`` keeps the default.
     normative_rights_collectable: bool | None = None
     search_time_months: Decimal = Field(DEFAULT_SEARCH_TIME_MONTHS, ge=0, le=24)
+    # How long the user has to save before the money is needed, used only to spread a
+    # remaining Transition Gap into a monthly saving target. A visible assumption with a
+    # documented default, never a hidden constant.
+    horizon_months: Decimal = Field(Decimal("12"), gt=0, le=60)
     # Which pivot role's preparation time feeds the Transition Gap. Defaults to the
     # highest match score.
     preferred_role_name: str | None = Field(None, max_length=100)

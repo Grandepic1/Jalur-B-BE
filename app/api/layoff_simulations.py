@@ -22,6 +22,7 @@ from app.core.entitlements import (
     ExitTerms,
     ExitType,
     compute_exit_entitlements,
+    contract_duration_months,
     exit_type_consistency_error,
     runway_months,
 )
@@ -32,7 +33,6 @@ from app.core.scoring import (
     score,
 )
 from app.core.transition import (
-    horizon_months_until,
     select_preparation_role,
     transition_gap,
 )
@@ -292,6 +292,9 @@ async def create_layoff_simulation(
             exit_type=payload.exit_type,
             monthly_wage_base=terms.monthly_wage_base,
             tenure_months=int(terms.tenure_months or 0),
+            contract_months=contract_duration_months(
+                terms.contract_start_date, terms.contract_end_date
+            ),
             employment_type=terms.employment_type,
             bpjs_tk_active=terms.bpjs_tk_active,
             bpjs_contributions_last_24_months=terms.bpjs_contribution_months_last_24,
@@ -392,7 +395,10 @@ async def create_layoff_simulation(
             [(name, match, int(prep)) for _, name, match, prep in role_rows],
             preferred_role_name=payload.preferred_role_name,
         )
-    horizon = horizon_months_until(today, today)
+    # The saving target spreads the remaining deficit over an explicit, visible horizon
+    # rather than the runway itself. Defaults to twelve months so the result stays an
+    # affordable monthly figure instead of equalling the whole deficit at once.
+    horizon = payload.horizon_months
     transitions = [
         (
             role,
@@ -422,6 +428,7 @@ async def create_layoff_simulation(
         "exit_type": payload.exit_type.value,
         "regulation_version": REGULATION_VERSION,
         "search_time_months": str(payload.search_time_months),
+        "horizon_months": str(payload.horizon_months),
         "scores": {
             "career_readiness": str(career_score),
             "financial_readiness": str(financial_score),

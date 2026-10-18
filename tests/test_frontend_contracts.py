@@ -116,6 +116,14 @@ class FrontendContractSchemaTests(TestCase):
         self.assertIs(simulation.exit_type, ExitType.efficiency_due_to_loss)
         self.assertEqual(simulation.search_time_months, DEFAULT_SEARCH_TIME_MONTHS)
 
+    def test_layoff_simulation_horizon_defaults_to_twelve_months(self) -> None:
+        from app.models.ai_features import LayoffSimulationRequest
+
+        # The saving target is spread over an explicit horizon; the old code always passed
+        # a zero horizon, which inflated the monthly figure to an unpayable amount.
+        request = LayoffSimulationRequest()
+        self.assertEqual(request.horizon_months, Decimal("12"))
+
     def test_employment_terms_model_exposes_statutory_inputs(self) -> None:
         from app.models.employment import EmploymentTerms, ExitRunwayCalculation
 

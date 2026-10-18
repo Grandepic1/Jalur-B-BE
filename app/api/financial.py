@@ -15,6 +15,7 @@ from app.core.entitlements import (
     JKP_CLAIM_WINDOW_MONTHS,
     add_months,
     compute_exit_entitlements,
+    contract_duration_months,
     cost_of_living_warning,
     exit_type_consistency_error,
     runway_layers,
@@ -219,6 +220,9 @@ def _exit_aware_runway_months(
             exit_type=terms.assumed_exit_type,
             monthly_wage_base=terms.monthly_wage_base,
             tenure_months=_effective_tenure(terms),
+            contract_months=contract_duration_months(
+                terms.contract_start_date, terms.contract_end_date
+            ),
             employment_type=terms.employment_type,
             bpjs_tk_active=terms.bpjs_tk_active,
             bpjs_contributions_last_24_months=terms.bpjs_contribution_months_last_24,
@@ -683,6 +687,9 @@ async def create_exit_runway(
             exit_type=payload.exit_type,
             monthly_wage_base=terms.monthly_wage_base,
             tenure_months=tenure,
+            contract_months=contract_duration_months(
+                terms.contract_start_date, terms.contract_end_date
+            ),
             employment_type=terms.employment_type,
             bpjs_tk_active=terms.bpjs_tk_active,
             bpjs_contributions_last_24_months=terms.bpjs_contribution_months_last_24,

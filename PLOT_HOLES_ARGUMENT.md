@@ -24,7 +24,7 @@ It has three parts:
 | T6 | Baseline matched on exact lowercase strings, fell back silently | Names are normalized (case, punctuation, whitespace, small synonym table) and matched by equality or whole-word containment, so "Sales" matches "Sales Executive". `baseline_coverage_percent` reports how much came from the baseline; everything else is labelled `estimasi model`. |
 | T7 | Flat 6-month target for everyone | Personal target = `T_prep(chosen role) + T_search`. Six months survives only as `reference_runway_months` for display and is never the scoring denominator. |
 | T8a | Time scenarios changed nothing but due dates | `LayoffSimulationRequest` now takes `exit_type`. All five exit grounds produce different runway **and** different Transition Gap values. |
-| T9 | Pivot Match and Career Risk weights had no justification | All weights moved to `app/core/scoring_config.py` with a rationale per weight, plus `scripts/scoring_sensitivity.py` (±10pp sweep with a stability verdict). |
+| T9 | Pivot Match and Career Risk weights had no justification | All weights moved to `app/core/scoring_config.py` with a rationale per weight, plus `scripts/scoring_sensitivity.py` (±10pp sweep with a comparable-pair flip-rate verdict). |
 | T10 | `dependents` collected but unused | Used in `cost_of_living_warning()`: essential spend per person is compared against the BPS per-capita poverty line and a warning is returned when it looks under-reported, which is exactly when the runway would be too optimistic. |
 | T14 | README stale | Title, English summary added at the top, broken `Plan.md` link removed, product URL added, roadmap split into implemented vs in-development. |
 
@@ -230,7 +230,7 @@ it is an estimate", which is better than the previous situation but not a strong
 | New tables/columns present in PostgreSQL via `information_schema` | `employment_terms`, `exit_runway_calculations` (33 cols), `simulation_role_transitions` (12 cols), 6 new `layoff_simulations` cols |
 | OpenAPI contract for the new routes | `/api/financial/employment-terms` GET+PUT, `/api/financial/exit-runway` POST, `/exit-runway/latest` GET; request/response fields present |
 | End-to-end through the endpoint against the real database (throwaway user: profile + asset + terms → `create_exit_runway` for all five grounds) | all five matched the spec's expected runway; 5 distinct values; layers stacked monotonically; JKP/net/tax/claim-deadline populated; the new contract-type guard rejected `pkwt_ends_on_schedule` for a PKWTT employee with 409 |
-| `uv run python scripts/scoring_sensitivity.py` | STABLE — no ±10pp shift let another pivot role strictly outrank the leader |
+| `uv run python scripts/scoring_sensitivity.py` | STABLE — worst ±10pp shift flipped 9.0% of comparable pivot-role pairs (threshold 10%) |
 
 Two test failures encountered during development were **my own wrong expectations**, not code
 bugs (a fractional-month day count and a `weighted_optional` renormalization figure). Both were

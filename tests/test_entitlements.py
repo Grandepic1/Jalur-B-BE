@@ -17,6 +17,7 @@ from app.core.entitlements import (
     ExitType,
     add_months,
     compute_exit_entitlements,
+    contract_duration_months,
     cost_of_living_warning,
     essential_expenses_per_person,
     exit_type_consistency_error,
@@ -236,6 +237,45 @@ class PkwtCompensationTests(TestCase):
     def test_negative_months_rejected(self) -> None:
         with self.assertRaises(ValueError):
             pkwt_compensation(Decimal("7000000"), -1)
+
+
+class PkwtContractDurationTests(TestCase):
+    """A renewed PKWT is compensated for the running contract, not total service."""
+
+    def test_compensation_uses_the_running_contract(self) -> None:
+        terms = eligible_terms(
+            ExitType.pkwt_ends_on_schedule,
+            tenure_months=48,
+            contract_months=12,
+            employment_type=EmploymentType.pkwt,
+        )
+        entitlements = compute_exit_entitlements(terms)
+        # 12/12 x 7jt, not 48/12 x 7jt: the earlier contracts were settled when they ended.
+        self.assertEqual(entitlements.gross_lump_sum, Decimal("7000000.00"))
+
+    def test_missing_contract_months_falls_back_to_tenure(self) -> None:
+        terms = eligible_terms(
+            ExitType.pkwt_ends_on_schedule,
+            tenure_months=12,
+            employment_type=EmploymentType.pkwt,
+        )
+        self.assertEqual(
+            compute_exit_entitlements(terms).gross_lump_sum, Decimal("7000000.00")
+        )
+
+
+class ContractDurationTests(TestCase):
+    def test_whole_months_between_contract_dates(self) -> None:
+        self.assertEqual(
+            contract_duration_months(date(2025, 1, 1), date(2026, 1, 1)), 12
+        )
+        self.assertEqual(
+            contract_duration_months(date(2025, 1, 15), date(2026, 1, 14)), 11
+        )
+
+    def test_missing_bounds_return_none(self) -> None:
+        self.assertIsNone(contract_duration_months(None, date(2026, 1, 1)))
+        self.assertIsNone(contract_duration_months(date(2025, 1, 1), None))
 
 
 class RunwayClosedFormTests(TestCase):

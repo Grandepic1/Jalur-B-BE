@@ -62,6 +62,19 @@ class RaniTransitionTests(TestCase):
         # 4.5 months of burn is 27,000,000 spread over 6 months.
         self.assertEqual(result.recommended_monthly_saving, Decimal("4500000"))
 
+    def test_twelve_month_horizon_matches_the_paper(self) -> None:
+        result = transition_gap(
+            role_name="Data Analyst",
+            match_score=Decimal("72"),
+            preparation_time_months=Decimal("4"),
+            exit_runway_months=Decimal("2.50"),
+            monthly_burn=Decimal("6000000"),
+            search_time_months=Decimal("3"),
+            horizon_months=Decimal("12"),
+        )
+        # 27,000,000 spread over 12 months, the figure reported in the paper.
+        self.assertEqual(result.recommended_monthly_saving, Decimal("2250000"))
+
     def test_saving_target_is_zero_when_the_exit_is_immediate_and_runway_is_zero(self) -> None:
         result = transition_gap(
             role_name="Data Analyst",

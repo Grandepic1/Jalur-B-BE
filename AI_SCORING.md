@@ -127,10 +127,13 @@ belum cukup" rather than a number.
 ## Weight sensitivity
 
 `uv run python scripts/scoring_sensitivity.py` shifts every weight by +/-10 percentage
-points, renormalizes the group, and reports whether the top-ranked pivot role changes. It
-distinguishes a genuine score-driven overtake from a tie-break, and exits non-zero if a
-perturbation lets another role strictly outrank the leader. Recorded result for
-`career-resilience-v2`: stable.
+points, renormalizes the group, and measures how much the pivot ranking moves. The headline
+metric is the discordant-pair flip rate: over every pair of pivot roles whose relative order
+can actually change, the share whose order reverses under a shift. Pairs in which one role
+is at least as strong as the other on every dimension are excluded, because positive weights
+can never reorder them; this removes the all-strong role that made the earlier top-role test
+impossible to fail. The script exits non-zero when the worst shift flips more than 10% of
+comparable pairs. Recorded result for `career-resilience-v2`: worst 9.0%, mean 7.4%.
 
 ## Exit-aware runway
 
