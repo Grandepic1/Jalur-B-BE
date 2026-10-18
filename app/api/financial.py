@@ -23,7 +23,7 @@ from app.core.entitlements import (
 )
 from app.core.scoring import financial_readiness
 from app.core.transition import (
-    horizon_months_until,
+    savings_horizon,
     select_preparation_role,
     transition_gap,
 )
@@ -606,15 +606,13 @@ async def _role_transitions(
     exit_runway: Decimal,
     monthly_burn: Decimal,
     search_time_months: Decimal,
-    day_of_layoff: date,
-    today: date,
+    horizon_months: Decimal,
 ) -> list[TransitionGapResponse]:
     """Deterministic Transition Gap for every pivot role the user has."""
     roles = await _pivot_roles(db, user_id)
     if not roles:
         return []
     gap_counts = await _gap_counts(db, user_id)
-    horizon = horizon_months_until(day_of_layoff, today)
     results: list[TransitionGapResponse] = []
     for role_id, role_name, match_score, preparation in roles:
         gap_count = gap_counts.get(role_id, 0)
@@ -625,7 +623,7 @@ async def _role_transitions(
             exit_runway_months=exit_runway,
             monthly_burn=monthly_burn,
             search_time_months=search_time_months,
-            horizon_months=horizon,
+            horizon_months=horizon_months,
             gap_count=gap_count,
         )
         results.append(
@@ -719,14 +717,17 @@ async def create_exit_runway(
     warning = cost_of_living_warning(
         profile.monthly_essential_expenses, profile.dependents or 0
     )
+    # If the layoff date is unknown (or already past) horizon_months_until returns zero,
+    # which transition_gap treats as "unset" and would fall back to the runway. Use the
+    # request's explicit horizon instead, so the saving target stays a monthly figure.
+    horizon = savings_horizon(day_of_layoff, today, payload.horizon_months)
     transitions = await _role_transitions(
         db,
         user_id=user.id,
         exit_runway=headline.runway_months,
         monthly_burn=burn,
         search_time_months=payload.search_time_months,
-        day_of_layoff=day_of_layoff,
-        today=today,
+        horizon_months=horizon,
     )
 
     calculation = ExitRunwayCalculation(

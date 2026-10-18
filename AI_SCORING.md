@@ -138,9 +138,9 @@ comparable pairs. Recorded result for `career-resilience-v2`: worst 9.0%, mean 7
 ## Exit-aware runway
 
 `app/core/entitlements.py` is a pure, I/O-free module implementing PP 35/2021 Art. 40
-(pesangon and UPMK tenure tables), the exit-ground multipliers from PP 37/2021 as amended
-by PP 6/2025, JKP eligibility and cash benefit, the final PPh 21 on severance (PP 68/2009),
-and PKWT compensation. It contains no LLM call at any point.
+(pesangon and UPMK tenure tables) and the exit-ground multipliers (PP 35/2021 Arts. 41–52),
+JKP eligibility and cash benefit (PP 37/2021 as amended by PP 6/2025), the final PPh 21 on
+severance (PP 68/2009), and PKWT compensation. It contains no LLM call at any point.
 
 `POST /api/financial/exit-runway` accepts an `exit_type` and returns every stacked layer
 (savings only, plus statutory rights, plus JKP, plus JHT) rather than one collapsed number,

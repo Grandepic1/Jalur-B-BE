@@ -8,8 +8,9 @@ Regulation basis
 ----------------
 * ``PP 35/2021`` Art. 40(2) — severance (pesangon) months of wage by tenure.
 * ``PP 35/2021`` Art. 40(3) — long-service award (UPMK) months of wage by tenure.
-* ``PP 35/2021`` Art. 41 — the multiplier applied to pesangon and UPMK for each ground
-  of termination.
+* ``PP 35/2021`` Arts. 41–52 — the per-ground multiplier applied to pesangon and UPMK
+  (e.g. Art. 43(1) efficiency caused by losses, Art. 43(2) efficiency to prevent losses,
+  Art. 44(2) closure not caused by losses, Art. 47 bankruptcy).
 * ``PP 68/2009`` — final PPh 21 on severance paid as a lump sum.
 * ``PP 37/2021`` as amended by ``PP 6/2025`` — JKP (Jaminan Kehilangan Pekerjaan)
   eligibility and cash benefit.
@@ -77,7 +78,9 @@ class ExitRules:
     note: str = ""
 
 
-# PP 35/2021 Art. 41.
+# Per-ground multipliers from PP 35/2021: Art. 43(1) efficiency caused by losses,
+# Art. 43(2) efficiency to prevent losses, Art. 44(2) closure not caused by losses,
+# Art. 47 bankruptcy. Resignation and the end of a PKWT carry no multiplier.
 EXIT_RULES: dict[ExitType, ExitRules] = {
     ExitType.efficiency_prevent_loss: ExitRules(
         pesangon_multiplier=Decimal("1.0"),
@@ -125,6 +128,22 @@ EXIT_RULES: dict[ExitType, ExitRules] = {
         jkp_eligible=False,
         pays_pkwt_compensation=False,
         note="Resignation: no pesangon, no UPMK, no JKP.",
+    ),
+}
+
+
+# Legal caveat surfaced for the two grounds whose pesangon multiplier PP 35/2021 halves.
+# Commentators argue that under the hierarchy of norms a Peraturan Pemerintah cannot cut a
+# right granted by the UU, so the 0.5x may not hold. The amount stays as the PP states it;
+# only the uncertainty is communicated.
+EXIT_DISCLAIMERS: dict[ExitType, str] = {
+    ExitType.efficiency_due_to_loss: (
+        "Berdasarkan PP 35/2021. Besaran ini dapat diperdebatkan; konsultasikan dengan "
+        "Disnaker atau penasihat hukum."
+    ),
+    ExitType.bankruptcy: (
+        "Berdasarkan PP 35/2021. Besaran ini dapat diperdebatkan; konsultasikan dengan "
+        "Disnaker atau penasihat hukum."
     ),
 }
 
@@ -322,8 +341,9 @@ def pkwt_compensation(monthly_wage: Decimal, months: int) -> Decimal:
     """PKWT compensation: (contract duration in months / 12) x monthly wage.
 
     The duration is the contract that is ending (see ``ExitTerms.contract_months``), not
-    total service. A renewed PKWT is compensated for the running contract, whose earlier
-    terms were settled when they ended.
+    total service. PP 35/2021 Art. 15(4) pays the compensation when each contract ends (a
+    renewed PKWT is settled for the running contract before the extension), and Art. 16
+    sets the amount as masa kerja / 12 x monthly wage.
     """
     if months < 0:
         raise ValueError("months cannot be negative")
@@ -405,6 +425,10 @@ def compute_exit_entitlements(terms: ExitTerms) -> ExitEntitlements:
         ]
     else:
         notes = [rules.note]
+
+    disclaimer = EXIT_DISCLAIMERS.get(terms.exit_type)
+    if disclaimer:
+        notes.append(disclaimer)
 
     # PP 68/2009 applies the final PPh 21 to the whole severance lump sum, including UPMK.
     tax = severance_final_tax(gross)
@@ -582,7 +606,8 @@ BPS_POVERTY_LINE_VERSION = "bps-2024-09"
 def months_between(start: date, end: date) -> int:
     """Whole calendar months from ``start`` to ``end`` (floor, never negative).
 
-    Used to measure the length of the PKWT that is currently ending.
+    Counts to the anniversary: 15 Jan -> 14 Feb is one month and 15 Jan -> 15 Feb is also
+    one month, because a partial trailing month rounds down.
     """
     if end <= start:
         return 0
@@ -593,10 +618,15 @@ def months_between(start: date, end: date) -> int:
 
 
 def contract_duration_months(start: date | None, end: date | None) -> int | None:
-    """Whole months covered by a PKWT, or ``None`` when either bound is missing."""
+    """Whole months covered by a PKWT, or ``None`` when either bound is missing.
+
+    Indonesian contracts state the end date inclusively ("1 Jan - 31 Dec" is twelve
+    months), so the day after ``end`` is used. Otherwise the last day of the contract is
+    dropped and every whole-year contract loses a month.
+    """
     if start is None or end is None:
         return None
-    return months_between(start, end)
+    return months_between(start, end + timedelta(days=1))
 
 
 def add_months(start: date, months: Decimal) -> date:

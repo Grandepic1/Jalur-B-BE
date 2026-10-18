@@ -6,6 +6,7 @@ the three-month search assumption is a surplus, while the same user exiting by
 resignation (R = 2.50) is in deficit.
 """
 
+from datetime import date
 from decimal import Decimal
 from unittest import TestCase
 
@@ -15,6 +16,7 @@ from app.core.transition import (
     MIN_PREPARATION_MONTHS,
     months_saved_by_closing_one_gap,
     preparation_months_for_gap_count,
+    savings_horizon,
     select_preparation_role,
     transition_gap,
 )
@@ -186,3 +188,41 @@ class ExitTypeIndependenceTests(TestCase):
         self.assertEqual(gaps[ExitType.efficiency_due_to_loss], Decimal("3.75"))
         self.assertEqual(gaps[ExitType.efficiency_prevent_loss], Decimal("6.67"))
         self.assertEqual(len(set(gaps.values())), 3)
+
+
+class SavingsHorizonTests(TestCase):
+    """The saving target must never divide the deficit by the runway itself."""
+
+    TODAY = date(2026, 1, 1)
+
+    def test_future_layoff_uses_the_time_until_then(self) -> None:
+        # 1 Jan -> 1 Jul 2026 is 181 days; 181 / 30.44 = 5.95 months.
+        horizon = savings_horizon(
+            date(2026, 7, 1), self.TODAY, fallback=Decimal("12")
+        )
+        self.assertEqual(horizon, Decimal("5.95"))
+
+    def test_missing_or_past_layoff_uses_the_fallback(self) -> None:
+        self.assertEqual(
+            savings_horizon(self.TODAY, self.TODAY, fallback=Decimal("12")),
+            Decimal("12"),
+        )
+        self.assertEqual(
+            savings_horizon(date(2025, 12, 1), self.TODAY, fallback=Decimal("12")),
+            Decimal("12"),
+        )
+
+    def test_resignation_without_a_date_targets_twelve_months(self) -> None:
+        # The old endpoint passed today as the layoff date, giving horizon 0 and a target
+        # of 4.5 * 6jt / 2.5 = 10.8jt. The fallback keeps the paper's 2.25jt.
+        horizon = savings_horizon(self.TODAY, self.TODAY, fallback=Decimal("12"))
+        result = transition_gap(
+            role_name="Data Analyst",
+            match_score=Decimal("72"),
+            preparation_time_months=Decimal("4"),
+            exit_runway_months=Decimal("2.50"),
+            monthly_burn=Decimal("6000000"),
+            search_time_months=Decimal("3"),
+            horizon_months=horizon,
+        )
+        self.assertEqual(result.recommended_monthly_saving, Decimal("2250000"))

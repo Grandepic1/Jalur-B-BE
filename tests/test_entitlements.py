@@ -269,13 +269,56 @@ class ContractDurationTests(TestCase):
         self.assertEqual(
             contract_duration_months(date(2025, 1, 1), date(2026, 1, 1)), 12
         )
+        # End dates are inclusive in Indonesian contracts, so this is a full year.
         self.assertEqual(
-            contract_duration_months(date(2025, 1, 15), date(2026, 1, 14)), 11
+            contract_duration_months(date(2025, 1, 15), date(2026, 1, 14)), 12
+        )
+        self.assertEqual(
+            contract_duration_months(date(2026, 1, 1), date(2026, 12, 31)), 12
+        )
+        self.assertEqual(
+            contract_duration_months(date(2026, 1, 1), date(2026, 11, 30)), 11
         )
 
     def test_missing_bounds_return_none(self) -> None:
         self.assertIsNone(contract_duration_months(None, date(2026, 1, 1)))
         self.assertIsNone(contract_duration_months(date(2025, 1, 1), None))
+
+    def test_full_year_contract_dates_pay_one_month(self) -> None:
+        months = contract_duration_months(date(2026, 1, 1), date(2026, 12, 31))
+        terms = eligible_terms(
+            ExitType.pkwt_ends_on_schedule,
+            tenure_months=48,
+            contract_months=months,
+            employment_type=EmploymentType.pkwt,
+        )
+        self.assertEqual(
+            compute_exit_entitlements(terms).gross_lump_sum, Decimal("7000000.00")
+        )
+
+
+class ExitDisclaimerTests(TestCase):
+    """The two halved grounds carry a visible legal caveat; the others do not."""
+
+    def test_halved_grounds_carry_the_caveat(self) -> None:
+        for exit_type in (ExitType.efficiency_due_to_loss, ExitType.bankruptcy):
+            with self.subTest(exit_type=exit_type):
+                notes = compute_exit_entitlements(eligible_terms(exit_type)).notes
+                self.assertTrue(
+                    any("dapat diperdebatkan" in note for note in notes), notes
+                )
+
+    def test_full_grounds_have_no_caveat(self) -> None:
+        for exit_type in (
+            ExitType.efficiency_prevent_loss,
+            ExitType.closure_not_loss,
+            ExitType.resign,
+        ):
+            with self.subTest(exit_type=exit_type):
+                notes = compute_exit_entitlements(eligible_terms(exit_type)).notes
+                self.assertFalse(
+                    any("dapat diperdebatkan" in note for note in notes), notes
+                )
 
 
 class RunwayClosedFormTests(TestCase):

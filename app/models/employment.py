@@ -247,6 +247,11 @@ class ExitRunwayRequest(BaseModel):
         DEFAULT_SEARCH_TIME_MONTHS, ge=0, le=24
     )
     day_of_layoff: date | None = None
+    # How long the user has to save before the money is needed, used only to spread a
+    # remaining Transition Gap into a monthly saving target. Acts as the fallback when
+    # ``day_of_layoff`` is missing or not in the future, so the target never divides the
+    # whole deficit by the runway.
+    horizon_months: Decimal = Field(Decimal("12"), gt=0, le=60)
 
     model_config = ConfigDict(extra="forbid")
 

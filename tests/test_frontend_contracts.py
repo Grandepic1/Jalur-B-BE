@@ -124,6 +124,15 @@ class FrontendContractSchemaTests(TestCase):
         request = LayoffSimulationRequest()
         self.assertEqual(request.horizon_months, Decimal("12"))
 
+    def test_exit_runway_horizon_defaults_to_twelve_months(self) -> None:
+        from app.models.employment import ExitRunwayRequest
+
+        # Same fallback as the simulation: without it, a missing layoff date divides the
+        # whole deficit by the runway and inflates the monthly saving target.
+        request = ExitRunwayRequest(exit_type=ExitType.resign)
+        self.assertEqual(request.horizon_months, Decimal("12"))
+        self.assertIsNone(request.day_of_layoff)
+
     def test_employment_terms_model_exposes_statutory_inputs(self) -> None:
         from app.models.employment import EmploymentTerms, ExitRunwayCalculation
 

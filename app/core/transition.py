@@ -155,3 +155,14 @@ def horizon_months_until(day_of_layoff, today) -> Decimal:
     return (Decimal(days) / Decimal("30.44")).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
+
+
+def savings_horizon(day_of_layoff, today, fallback: Decimal) -> Decimal:
+    """Months the user has to save before the money is needed.
+
+    Uses the time until ``day_of_layoff`` when that is in the future, otherwise the
+    caller's fallback. ``horizon_months_until`` returns zero for a missing or past date,
+    and a zero horizon makes the Transition Gap spread the deficit over the runway itself.
+    """
+    horizon = horizon_months_until(day_of_layoff, today)
+    return horizon if horizon > 0 else fallback
